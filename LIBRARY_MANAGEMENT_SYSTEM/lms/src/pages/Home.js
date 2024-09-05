@@ -1,9 +1,19 @@
-import React from 'react'
+import React from 'react';
 
 const Home = () => {
   return (
-    <div>Welcome to Home</div>
-  )
+    <div 
+      className="home flex items-center justify-center h-screen bg-center" 
+      style={{ 
+        backgroundImage: `url(${require('../assets/Home.jpg')})`,
+        backgroundSize: '100%', 
+        backgroundRepeat: 'no-repeat', 
+        backgroundPosition: 'center' 
+      }}
+    >
+  
+    </div>
+  );
 }
 
-export default Home
+export default Home;
