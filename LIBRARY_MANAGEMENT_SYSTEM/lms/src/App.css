@@ -1,38 +1,56 @@
-.App {
-  text-align: center;
-}
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+/* General App styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
   }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+  
+  .App {
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    min-height: 100%;
   }
-  to {
-    transform: rotate(360deg);
+  
+  /* Main content section */
+  .main {
+    min-height: calc(100vh - 60px); /* Adjust height considering header/footer */
+    padding-top: 0; /* Remove any padding that may cause white space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensures main content is centered */
   }
-}
+  
+  /* Header styling (if needed) */
+  header {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  /* Footer styling */
+  .footer {
+    background-color: #282c34;
+    padding: 1rem;
+    color: white;
+    text-align: center;
+  }
+  
+  /* Links */
+  .App-link {
+    color: #61dafb;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .App-link:hover {
+    color: #21a1f1;
+  }
+  
+  /* Responsive design adjustments */
+  @media (max-width: 768px) {
+    .main {
+      padding-top: 2rem;
+    }
+  }
+  

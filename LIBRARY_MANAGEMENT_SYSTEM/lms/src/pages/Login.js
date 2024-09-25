@@ -1,91 +1,98 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // State to hold error messages
-  const navigate = useNavigate(); // Hook for navigation
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
-    // Regular expression for password validation
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
-
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters long, include at least one capital letter, one special character, and one number.');
-      return;
+    if (email === 'admin@mca.in' && password === 'Admin@2025') {
+      navigate('/adminpage');
     }
 
-    // Example credentials check for admin
-    if (username === 'admin@mca.in' && password === 'Admin@2025') {
-      // Navigate to AdminPage
-      navigate('/Adminpage');
-    } else {
-      // Navigate to UserPage
-      navigate('/userpage');
+    try {
+      const response = await axios.post('http://localhost:8080/api/login', { email, password });
+      console.log(response.data); // Add this line to see the response
+      if (response.data.success) {
+        navigate('/userpage');
+      } else {
+        setMessage('Invalid credentials');
+      }
+    } catch (error) {
+      setMessage('An error occurred while logging in');
+      console.error('Login Error:', error.response?.data?.message || error.message);
+    }
+    finally {
+      setLoading(false);
     }
   };
-
   return (
-    <div 
-      className="flex items-center justify-center min-h-screen"
-      style={{
-        backgroundImage: `url(${require('../assets/lms3.jpg')})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      <form 
-        onSubmit={handleSubmit} 
-        className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm"
+    <>
+      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
+        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
+          <h1 className="text-white text-xl font-bold">Library Management System</h1>
+          <nav className="flex space-x-4">
+            <Link to="/" className="text-white hover:text-gray-200 mx-2">Home</Link>
+            <Link to="/about" className="text-white hover:text-gray-200 mx-2">About</Link>
+          </nav>
+        </div>
+      </header>
+
+      <div 
+        className="flex items-center justify-center min-h-screen"
+        style={{
+          backgroundImage: `url(${require('../assets/lms3.jpg')})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+          {message && <p className="text-red-500 text-center mb-4">{message}</p>} {/* Show error message */}
+          <form onSubmit={handleLogin}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+              <input 
+                type="email" 
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+              <input 
+                type="password" 
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
 
-        <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 mb-2">Email</label>
-          <input 
-            type="email" 
-            id="username" 
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} 
-            required
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          {/* <div className="mt-4 text-center">
+            <Link to="/forgot-password" className="text-blue-500 hover:underline">Forgot Password?</Link>
+          </div> */}
         </div>
-
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 mb-2">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        {/* Display error message if validation fails */}
-        {error && (
-          <div className="mb-4 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
-
-        <button 
-          type="submit" 
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
-        >
-          Login
-        </button>
-
-        <Link to="forgot-password">
-          <p className="text-sm text-gray-600 hover:text-gray-800 transition duration-200 mt-4">Forgot your password?</p>
-        </Link>
-      </form>
-    </div>
+      </div>
+    </>
   );
 };
 

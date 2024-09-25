@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-function Addstaff() {
+function AddStaff() {
   const [formData, setFormData] = useState({
     userid: '',
     name: '',
@@ -9,173 +10,242 @@ function Addstaff() {
     phoneno: '',
     email: '',
     dept: '',
-    picture: null,
-    status: 'active',
+    status: 'active', // Default status is 'active'
     password: '',
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  useEffect(() => {
-    const generatedPassword = Math.random().toString(36).slice(-8);
-    setFormData((prevData) => ({
-      ...prevData,
-      password: generatedPassword,
-    }));
-  }, []);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleFileChange = (e) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      picture: e.target.files[0],
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    setIsSubmitted(true);
+
+    try {
+      const response = await fetch('/api/addstaff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert('Staff registered successfully!');
+        setFormData({
+          userid: '',
+          name: '',
+          dob: '',
+          address: '',
+          phoneno: '',
+          email: '',
+          dept: '',
+          status: 'active',
+          password: '',
+        });
+      } else {
+        alert('Error registering staff!');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error registering staff!');
+    }
+  };
+
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
+  const handleBack = () => {
+    navigate('/staff-management');
   };
 
   return (
-    <div className="p-4 max-w-sm mx-auto bg-white rounded shadow-md">
-      <h2 className="text-lg font-bold mb-4">Registration Form</h2>
-      {isSubmitted ? (
-        <p className="text-green-500">Registration Successful!</p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <label className="block mb-2">
-            User ID:
-            <input
-              type="text"
-              name="userid"
-              value={formData.userid}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Name:
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Date of Birth:
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Address:
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Phone Number:
-            <input
-              type="text"
-              name="phoneno"
-              value={formData.phoneno}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Email:
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Department:
-            <input
-              type="text"
-              name="dept"
-              value={formData.dept}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <label className="block mb-2">
-            Picture:
-            <input
-              type="file"
-              name="picture"
-              onChange={handleFileChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <div className="block mb-2">
-            Status:
-            <label className="inline-flex items-center">
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundImage: `url(${require('../assets/lms2.jpg')})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Header with Logout and Back Button */}
+      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
+        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
+          <h1 className="text-white text-xl font-bold">LMS</h1>
+          <nav className="flex space-x-4">
+            <Link to="/manage-users" className="text-white hover:text-gray-200">Back</Link>
+            <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Form Content */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: '5rem', // Add padding for header space
+        }}
+      >
+        <div className="bg-white bg-opacity-90 p-8 rounded-lg shadow-lg w-96">
+          <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Add Staff</h2>
+          <form onSubmit={handleSubmit}>
+            {/* User ID */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="userid">
+                User ID
+              </label>
               <input
-                type="radio"
-                name="status"
-                value="active"
-                checked={formData.status === 'active'}
+                name="userid"
+                value={formData.userid}
                 onChange={handleChange}
-                className="form-radio"
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Enter User ID"
+                required
               />
-              <span className="ml-2">Active</span>
-            </label>
-            <label className="inline-flex items-center ml-4">
+            </div>
+
+            {/* Name */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="name">
+                Name
+              </label>
               <input
-                type="radio"
-                name="status"
-                value="deactive"
-                checked={formData.status === 'deactive'}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                className="form-radio"
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Enter Name"
+                required
               />
-              <span className="ml-2">Deactive</span>
-            </label>
-          </div>
-          <label className="block mb-2">
-            Password (Autogenerated):
-            <input
-              type="text"
-              name="password"
-              value={formData.password}
-              readOnly
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600"
-          >
-            Register
-          </button>
-        </form>
-      )}
+            </div>
+
+            {/* Date of Birth */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="dob">
+                Date of Birth
+              </label>
+              <input
+                name="dob"
+                value={formData.dob}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="date"
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">
+                Email
+              </label>
+              <input
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="email"
+                placeholder="Enter Email"
+                required
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="phoneno">
+                Phone Number
+              </label>
+              <input
+                name="phoneno"
+                value={formData.phoneno}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Enter Phone Number"
+                required
+              />
+            </div>
+
+            {/* Address */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="address">
+                Address
+              </label>
+              <input
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Enter Address"
+                required
+              />
+            </div>
+
+            {/* Department */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="dept">
+                Department
+              </label>
+              <input
+                name="dept"
+                value={formData.dept}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Enter Department"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="password">
+                Password
+              </label>
+              <input
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="password"
+                placeholder="Enter Password"
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="submit"
+              >
+                Register
+              </button>
+              <Link
+                to="/"
+                className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+              >
+                Cancel
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default Addstaff;
+export default AddStaff;

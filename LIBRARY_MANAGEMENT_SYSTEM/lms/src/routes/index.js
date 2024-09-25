@@ -14,6 +14,10 @@ import U_periodicals from '../pages/U_periodicals'
 import U_books from '../pages/U_books'
 import U_searchperi from '../pages/U_searchperi'
 import Addstaff from '../pages/AddStaff'
+import StaffPage from '../pages/StaffPage'
+import About from '../pages/About'
+import Listbook from '../pages/Listbook'
+import Listuser from '../pages/Listuser'
 
 
 
@@ -26,6 +30,10 @@ const router = createBrowserRouter([
             {
                 path : "",
                 element : <Home/>
+            },
+            {
+                path : "about",
+                element : <About/>
             },
             {
                 path : "login",
@@ -41,6 +49,10 @@ const router = createBrowserRouter([
             {
                 path : "userpage",
                 element : <Userpage/>
+            },
+            {
+                path : "StaffPage",
+                element : <StaffPage/>
             },
             
             {
@@ -87,9 +99,18 @@ const router = createBrowserRouter([
                 path : "U_searchperi",
                 element : <U_searchperi/>
             },
+            {
+                path : "listuser",
+                element : <Listuser/>
+            },
+            {
+                path : "listbook",
+                element : <Listbook/>
+            },
 
         ]
     }
 ])
 
 export default router
+

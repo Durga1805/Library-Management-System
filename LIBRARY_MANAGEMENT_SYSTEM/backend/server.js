@@ -1,18 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const routes = require('./routes/index'); // Import the routes
+const userRoutes = require('./routes/userRoutes');
+const bookRoutes = require('./routes/bookRoutes');  // Import book routes
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 8080;
+
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use('/api', routes); // Use the routes defined in index.js
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection and other setup code here...
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/MyDatabase', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('MongoDB connected');
+}).catch((error) => console.log('MongoDB connection error:', error));
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log('Mongodb connected');
+// Routes
+app.use('/api', userRoutes);
+app.use('/api', bookRoutes);  // Add book routes
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });

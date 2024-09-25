@@ -1,53 +1,100 @@
-const Papa = require('papaparse');
+const csv = require('csv-parser');
 const fs = require('fs');
-const path = require('path');
-const User = require('../models/User'); 
-exports.uploadCsv = (req, res) => {
+const Student = require('../models/User');
+const moment = require('moment'); // For date parsing
+const bcrypt = require('bcrypt'); // For password hashing
+const jwt = require('jsonwebtoken'); // For generating JWTs
+require('dotenv').config();
+
+// Function to handle CSV upload and user creation
+const uploadCSV = async (req, res) => {
+  const results = [];
   const file = req.file;
 
   if (!file) {
     return res.status(400).json({ message: 'No file uploaded.' });
   }
 
-  const filePath = path.resolve(__dirname, '..', 'uploads', file.filename);
+  try {
+    // Read CSV file
+    fs.createReadStream(file.path)
+      .pipe(csv())
+      .on('data', (data) => {
+        results.push(data);
+      })
+      .on('end', async () => {
+        // Iterate over the parsed CSV data and save each user
+        for (let row of results) {
+          const dob = moment(row.dob, 'YYYY-MM-DD').toDate(); // Parse dob
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading file:', err);
-      return res.status(500).json({ message: 'Error reading file.' });
-    }
-
-    Papa.parse(data, {
-      header: true,
-      skipEmptyLines: true,
-      complete: async (results) => {
-        try {
-          console.log('Parsed CSV Data:', results.data);
-
-          const users = results.data;
-
-          for (const userData of users) {
-            // Validate userData if needed
-            console.log('Saving user data to MongoDB...');
-            const newUser = new User(userData);
-            await newUser.save();
-            console.log('User successfully added:', newUser);
+          // Check if the parsed date is valid
+          if (!moment(dob).isValid()) {
+            console.error(`Invalid date format for user ${row.name}: ${row.dob}`);
+            return res.status(400).json({ message: `Invalid date format for user ${row.name}: ${row.dob}` });
           }
 
-          res.status(200).json({ message: 'Users successfully added!' });
-        } catch (error) {
-          console.error('Error saving users:', error);
-          res.status(500).json({ message: 'Error adding users.', error: error.message });
-        } finally {
-          fs.unlink(filePath, (unlinkErr) => {
-            if (unlinkErr) console.error('Error deleting file:', unlinkErr);
+          const newUser = new Student({
+            userid: row.userid,
+            name: row.name,
+            dob: dob,
+            address: row.address,
+            phoneno: row.phoneno,
+            email: row.email,
+            dept: row.dept || 'DefaultDept',
+            status: row.status || 'Active', // Default status if not provided
+            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Default password if not provided
           });
+
+          try {
+            await newUser.save();
+          } catch (err) {
+            console.error(`Error saving user ${row.name}: ${err.message}`);
+            return res.status(500).json({ message: `Error saving user ${row.name}`, error: err.message });
+          }
         }
-      },
-      error: (parseError) => {
-        console.error('Error parsing CSV file:', parseError);
-        res.status(500).json({ message: 'Error parsing CSV file.', error: parseError.message });
-      },
-    });
-  });
+
+        res.status(201).json({ message: 'Users successfully added!' });
+      });
+  } catch (error) {
+    res.status(500).json({ message: 'Error processing CSV file', error: error.message });
+  }
 };
+
+// Function to handle login
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await Student.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: user.userid }, process.env.JWT_SECRET || 'your_jwt_secret', {
+      expiresIn: '1h',
+    });
+
+    res.status(200).json({ success: true, token, userId: user.userid }); // Include success field
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Function to get users without password
+const listUsers = async (req, res) => {
+  try {
+    const students = await Student.find({}, '-password'); // Excludes password field
+    res.status(200).json(students);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
+  }
+};
+
+module.exports = { uploadCSV, login, listUsers };

@@ -1,51 +1,80 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const UserPage = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate('/login'); // Redirects to the home or login page after logging out
+  };
+
   return (
-    <div 
-      className="flex items-center justify-center min-h-screen bg-cover bg-center" 
-      style={{
-        backgroundImage:  `url(${require('../assets/user.jpg')})`, // Replace with the actual image URL
-      }}
-    >
-      <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left">
-        <h1 className="text-4xl font-bold mb-6 text-black">LMS</h1>
-        <h2 className="text-2xl mb-8 text-black">Welcome User!!</h2>
-        <ul>
-          <li className="mb-4">
-            <Link 
-              to="/userch"
-              className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+    <div>
+      {/* Header Section */}
+      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
+      <div className='h-full container mx-auto flex items-center px-4 justify-between'>
+        <div className='flex items-center'>
+          <h1 className="text-white text-xl font-bold">LMS</h1>
+          </div>
+          <nav className="flex space-x-4">
+            
+            <button 
+              onClick={handleLogout} 
+              className="text-white hover:text-gray-200"
             >
-              Search Books
-            </Link>
-          </li>
-          <li className="mb-4">
-            <Link 
-              to="/issued-books"
-              className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-            >
-              Issued Book
-            </Link>
-          </li>
-          <li className="mb-4">
-            <Link 
-              to="/feedback"
-              className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-            >
-              Feedback
-            </Link>
-          </li>
-          <li className="mb-4">
-            <Link 
-              to="/history"
-              className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-            >
-              History
-            </Link>
-          </li>
-        </ul>
+              Logout
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content Section */}
+      <div 
+        className="flex items-center justify-center min-h-screen bg-cover bg-center" 
+        style={{
+          backgroundImage: `url(${require('../assets/user.jpg')})`, 
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left">
+          {/* <h1 className="text-4xl font-bold mb-6 text-black">LMS</h1> */}
+          <h2 className="text-2xl mb-8 text-black">Welcome User!!</h2>
+          {/* <ul>
+            <li className="mb-4">
+              <Link 
+                to="/userch"
+                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+              >
+                Search Books
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link 
+                to="/issued-books"
+                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+              >
+                Issued Book
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link 
+                to="/feedback"
+                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+              >
+                Feedback
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link 
+                to="/history"
+                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+              >
+                History
+              </Link>
+            </li>
+          </ul> */}
+        </div>
       </div>
     </div>
   );

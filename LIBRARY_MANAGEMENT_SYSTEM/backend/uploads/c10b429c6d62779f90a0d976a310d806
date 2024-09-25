@@ -1,0 +1,3 @@
+accno,call_no,title,year_of_publication,author,publisher,isbn,no_of_pages,price,dept,cover_type,status
+1234,QA123,Mathematics for Beginners,2020,John Doe,ABC Publishers,9781234567897,200,15.99,Math,Hardcover,Active
+5678,QA456,Advanced Physics,2019,Jane Smith,XYZ Publishers,9789876543210,350,25.50,Science,Paperback,Active
