@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,26 +13,30 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
 
+    // Handle admin login
     if (email === 'admin@mca.in' && password === 'Admin@2025') {
       navigate('/adminpage');
+      return;
     }
 
     try {
       const response = await axios.post('http://localhost:8080/api/login', { email, password });
-      console.log(response.data); // Add this line to see the response
+      console.log(response.data); // Log the response for debugging
       if (response.data.success) {
+        // Store userId in local storage (from API response)
+        localStorage.setItem('userId', response.data.userId); // Store userId instead of userName
         navigate('/userpage');
       } else {
-        setMessage('Invalid credentials');
+        setMessage('Invalid Email or Password');
       }
     } catch (error) {
-      setMessage('An error occurred while logging in');
+      setMessage('Invalid Email or Password');
       console.error('Login Error:', error.response?.data?.message || error.message);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
@@ -42,6 +45,7 @@ const Login = () => {
           <nav className="flex space-x-4">
             <Link to="/" className="text-white hover:text-gray-200 mx-2">Home</Link>
             <Link to="/about" className="text-white hover:text-gray-200 mx-2">About</Link>
+            
           </nav>
         </div>
       </header>
@@ -56,10 +60,10 @@ const Login = () => {
       >
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
           <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-          {message && <p className="text-red-500 text-center mb-4">{message}</p>} {/* Show error message */}
+          {message && <p className="text-red-500 text-center mb-4">{message}</p>}
           <form onSubmit={handleLogin}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">Username</label>
               <input 
                 type="email" 
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
@@ -86,10 +90,6 @@ const Login = () => {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-
-          {/* <div className="mt-4 text-center">
-            <Link to="/forgot-password" className="text-blue-500 hover:underline">Forgot Password?</Link>
-          </div> */}
         </div>
       </div>
     </>

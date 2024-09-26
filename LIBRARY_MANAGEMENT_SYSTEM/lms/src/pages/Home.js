@@ -20,7 +20,7 @@ const Home = () => {
     >
       {/* Header Section */}
       <header className="w-full p-4 bg-gradient-to-r from-blue-500 to-red-500 text-white flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Welcome to AJCE LMS</h1>
+        <h1 className="text-2xl font-bold">LMS</h1>
         <div className="flex items-center space-x-4">
           <button 
             className="bg-white text-blue-500 px-4 py-2 rounded" 
@@ -28,13 +28,14 @@ const Home = () => {
           >
             Login
           </button>
-          {/* Profile picture can be added here later when logged in */}
         </div>
       </header>
 
       {/* Main Content Section */}
       <div className="flex-grow flex items-center justify-center">
-        {/* Content can go here */}
+        <h1 className="text-3xl font-bold text-center">
+          Welcome to Library Management System..
+        </h1>
       </div>
     </div>
   );

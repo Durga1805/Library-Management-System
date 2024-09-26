@@ -46,18 +46,18 @@ const A_ManageBooks = () => {
             >
               ADD
             </Link>
-            {/* <Link 
-              to="/updatebook"
+            <Link 
+              to=""
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
               UPDATE
             </Link>
             <Link 
-              to="/search"
+              to=""
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
               SEARCH
-            </Link> */}
+            </Link>
             <Link 
               to="/listbook"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"

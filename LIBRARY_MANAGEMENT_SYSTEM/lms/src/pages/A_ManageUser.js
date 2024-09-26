@@ -51,19 +51,19 @@ const A_ManageUser = () => {
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               STAFFS
-            </Link>
+            </Link> */}
             <Link 
-              to="/updateuser"
+              to=""
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               UPDATE
             </Link>
             <Link 
-              to="/find-user"
+              to=""
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               SEARCH
-            </Link> */}
+            </Link>
             <Link 
               to="/listuser"
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"

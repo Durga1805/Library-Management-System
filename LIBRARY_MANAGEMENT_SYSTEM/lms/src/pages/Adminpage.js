@@ -59,9 +59,9 @@ const AdminPage = () => {
                 Manage Users
               </Link>
             </li>
-            {/* <li className="mb-4">
+            <li className="mb-4">
               <Link
-                to="/manage-periodicals"
+                to=""
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Manage Periodicals
@@ -69,7 +69,7 @@ const AdminPage = () => {
             </li>
             <li className="mb-4">
               <Link
-                to="/holidays"
+                to=""
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Holidays
@@ -77,7 +77,7 @@ const AdminPage = () => {
             </li>
             <li className="mb-4">
               <Link
-                to="/borrow-return"
+                to=""
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Borrowing And Return
@@ -85,7 +85,7 @@ const AdminPage = () => {
             </li>
             <li className="mb-4">
               <Link
-                to="/visitor-tracking"
+                to=""
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Visitor Tracking
@@ -93,12 +93,12 @@ const AdminPage = () => {
             </li>
             <li className="mb-4">
               <Link
-                to="/FandS"
+                to=""
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 FeedBack & Suggestions
               </Link>
-            </li> */}
+            </li>
           </ul>
         </div>
       </div>

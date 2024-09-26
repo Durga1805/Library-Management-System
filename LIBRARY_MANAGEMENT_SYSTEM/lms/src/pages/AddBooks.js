@@ -73,7 +73,7 @@ const AddBooks = () => {
             <h1 className="text-white text-xl font-bold">LMS</h1>
           </div>
           <nav className="flex space-x-4">
-            <Link to="/adminpage" className="text-white hover:text-gray-200">Back</Link>
+            <Link to="/manage-books" className="text-white hover:text-gray-200">Back</Link>
             <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
           </nav>
         </div>
