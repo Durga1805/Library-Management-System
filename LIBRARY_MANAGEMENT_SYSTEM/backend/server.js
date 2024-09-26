@@ -1,8 +1,9 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
-const bookRoutes = require('./routes/bookRoutes');  // Import book routes
+const bookRoutes = require('./routes/bookRoutes');
 require('dotenv').config();
 
 const app = express();

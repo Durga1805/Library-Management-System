@@ -11,13 +11,13 @@ import A_ManageUser from '../pages/A_ManageUser'
 import A_ManageBooks from '../pages/A_ManageBooks'
 import AddBooks from '../pages/AddBooks'
 import U_periodicals from '../pages/U_periodicals'
-import U_books from '../pages/U_books'
 import U_searchperi from '../pages/U_searchperi'
 import Addstaff from '../pages/AddStaff'
 import StaffPage from '../pages/StaffPage'
 import About from '../pages/About'
 import Listbook from '../pages/Listbook'
 import Listuser from '../pages/Listuser'
+import SearchResults from '../pages/Searchresult'
 
 
 
@@ -92,8 +92,8 @@ const router = createBrowserRouter([
                 element : <AddBooks/>
             },
             {
-                path : "U_books",
-                element : <U_books/>
+                path : "search-results",
+                element : <SearchResults/>
             },
             {
                 path : "U_searchperi",

@@ -1,3 +1,4 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\bookController
 const csv = require('csv-parser');
 const fs = require('fs');
 const Book = require('../models/Book');
@@ -81,4 +82,36 @@ const listBooks = async (req, res) => {
   }
 };
 
-module.exports = { uploadBooksCSV, listBooks };
+// Function to search for books
+const searchBooks = async (req, res) => {
+  const { type, query } = req.query;
+  let searchCriteria = {};
+
+  // Validate query parameters
+  if (!type || !query) {
+    return res.status(400).json({ message: 'Type and query are required.' });
+  }
+
+  if (type === 'title') {
+    searchCriteria.title = new RegExp(query, 'i'); // Case insensitive search
+  } else if (type === 'author') {
+    searchCriteria.author = new RegExp(query, 'i');
+  } else if (type === 'isbn') {
+    searchCriteria.isbn = query;
+  } else {
+    return res.status(400).json({ message: 'Invalid search type.' });
+  }
+
+  try {
+    const books = await Book.find(searchCriteria);
+    if (books.length === 0) {
+      return res.status(404).json({ message: 'No books found' });
+    }
+    res.status(200).json(books); // Send back the list of books
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching books', error: error.message });
+  }
+};
+
+module.exports = { uploadBooksCSV, listBooks, searchBooks };
+
