@@ -1,6 +1,0 @@
-userid,name,dob,address,phoneno,startdate,enddate,email,password,dept,semid,status
-1,John Doe,2000-01-15,"123 Main St, Cityville",1234567890,2023-08-01,2024-05-31,johndoe@example.com,securepassword1,Computer Science,1,Active
-2,Jane Smith,1999-03-22,"456 Elm St, Townsville",0987654321,2023-08-01,2024-05-31,janesmith@example.com,securepassword2,Mathematics,2,Active
-3,Emily Johnson,2001-06-10,"789 Oak St, Villageburg",2345678901,2023-08-01,2024-05-31,emilyj@example.com,securepassword3,Physics,1,Active
-4,Michael Brown,1998-11-05,"321 Pine St, Hamletford",3456789012,2023-08-01,2024-05-31,michaelb@example.com,securepassword4,Chemistry,2,Active
-5,Sarah Davis,2000-02-18,"654 Maple St, Metropolis",4567890123,2023-08-01,2024-05-31,sarahd@example.com,securepassword5,Biology,1,Active

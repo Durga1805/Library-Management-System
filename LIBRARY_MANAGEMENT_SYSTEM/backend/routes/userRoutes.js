@@ -1,6 +1,8 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\routes\userRoutes.js
+
 const express = require('express');
 const multer = require('multer');
-const { uploadCSV, login, listUsers } = require('../controllers/userController');
+const { uploadCSV, login, listUsers, updateUserStatus } = require('../controllers/userController');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -13,5 +15,8 @@ router.post('/login', login);
 
 // GET route for fetching users without password
 router.get('/users', listUsers);
+
+// PUT route for updating user status
+router.put('/users/:userId/status', updateUserStatus);
 
 module.exports = router;

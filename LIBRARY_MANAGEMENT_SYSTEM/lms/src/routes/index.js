@@ -18,6 +18,8 @@ import About from '../pages/About'
 import Listbook from '../pages/Listbook'
 import Listuser from '../pages/Listuser'
 import SearchResults from '../pages/Searchresult'
+import A_SearchBook from '../pages/A_SearchBook'
+import A_SearchUsers from '../pages/A_SearchUser'
 
 
 
@@ -107,6 +109,18 @@ const router = createBrowserRouter([
                 path : "listbook",
                 element : <Listbook/>
             },
+            {
+                path : "A_search",
+                element : <A_SearchBook/>
+            },
+            {
+                path : "searchuser",
+                element : <A_SearchUsers/>
+            },
+            // {
+            //     path : "A_search",
+            //     element : <A_SearchBook/>
+            // },
 
         ]
     }

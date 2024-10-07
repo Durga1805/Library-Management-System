@@ -1,3 +1,5 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\userController.js
+
 const csv = require('csv-parser');
 const fs = require('fs');
 const Student = require('../models/User');
@@ -97,4 +99,22 @@ const listUsers = async (req, res) => {
   }
 };
 
-module.exports = { uploadCSV, login, listUsers };
+// Function to update user status
+const updateUserStatus = async (req, res) => {
+  const { userId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const user = await Student.findByIdAndUpdate(userId, { status }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating user status', error: error.message });
+  }
+};
+
+module.exports = { uploadCSV, login, listUsers, updateUserStatus };

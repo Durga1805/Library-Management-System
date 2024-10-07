@@ -1,3 +1,4 @@
+// LIBRARY_MANAGEMENT_SYSTEM\lms\src\pages\Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -13,10 +14,8 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
 
-    // Handle admin login
-    if (email === 'admin@mca.in' && password === 'Admin@2025') {
-      navigate('/adminpage');
-      return;
+    if(email === 'admin@mca.in' && password==='Admin@2025'){
+      navigate('/Adminpage');
     }
 
     try {

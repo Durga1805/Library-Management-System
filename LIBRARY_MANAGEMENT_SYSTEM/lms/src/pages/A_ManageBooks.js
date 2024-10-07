@@ -15,17 +15,15 @@ const A_ManageBooks = () => {
     <div>
       {/* Header Section */}
       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-      <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-        <div className='flex items-center'>
-          <h1 className="text-white text-xl font-bold">LMS</h1>
+        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
+          <div className='flex items-center'>
+            <h1 className="text-white text-xl font-bold">LMS</h1>
           </div>
           <nav className="flex space-x-4">
-            
             <Link to="/Adminpage" className="text-white hover:text-gray-200">Back</Link>
             <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
           </nav>
         </div>
-        
       </header>
 
       {/* Main Content Section */}
@@ -46,14 +44,9 @@ const A_ManageBooks = () => {
             >
               ADD
             </Link>
+            
             <Link 
-              to=""
-              className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
-            >
-              UPDATE
-            </Link>
-            <Link 
-              to=""
+              to="/A_search"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
               SEARCH
