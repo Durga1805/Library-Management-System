@@ -1,8 +1,7 @@
 // LIBRARY_MANAGEMENT_SYSTEM\backend\routes\userRoutes.js
-
 const express = require('express');
 const multer = require('multer');
-const { uploadCSV, login, listUsers, updateUserStatus } = require('../controllers/userController');
+const { uploadCSV, login, listUsers, updateUserStatus, searchUsers } = require('../controllers/userController');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -18,5 +17,8 @@ router.get('/users', listUsers);
 
 // PUT route for updating user status
 router.put('/users/:userId/status', updateUserStatus);
+
+// GET route for searching users
+router.get('/users/search', searchUsers);
 
 module.exports = router;

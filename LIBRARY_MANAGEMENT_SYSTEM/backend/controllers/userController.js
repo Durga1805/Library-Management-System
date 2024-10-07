@@ -1,11 +1,10 @@
 // LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\userController.js
-
 const csv = require('csv-parser');
 const fs = require('fs');
 const Student = require('../models/User');
-const moment = require('moment'); // For date parsing
-const bcrypt = require('bcrypt'); // For password hashing
-const jwt = require('jsonwebtoken'); // For generating JWTs
+const moment = require('moment');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // Function to handle CSV upload and user creation
@@ -25,7 +24,6 @@ const uploadCSV = async (req, res) => {
         results.push(data);
       })
       .on('end', async () => {
-        // Iterate over the parsed CSV data and save each user
         for (let row of results) {
           const dob = moment(row.dob, 'YYYY-MM-DD').toDate(); // Parse dob
 
@@ -43,8 +41,8 @@ const uploadCSV = async (req, res) => {
             phoneno: row.phoneno,
             email: row.email,
             dept: row.dept || 'DefaultDept',
-            status: row.status || 'Active', // Default status if not provided
-            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Default password if not provided
+            status: row.status || 'Active',
+            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Hash password
           });
 
           try {
@@ -83,7 +81,7 @@ const login = async (req, res) => {
       expiresIn: '1h',
     });
 
-    res.status(200).json({ success: true, token, userId: user.userid }); // Include success field
+    res.status(200).json({ success: true, token, userId: user.userid });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
@@ -92,7 +90,7 @@ const login = async (req, res) => {
 // Function to get users without password
 const listUsers = async (req, res) => {
   try {
-    const students = await Student.find({}, '-password'); // Excludes password field
+    const students = await Student.find({}, '-password'); // Exclude password field
     res.status(200).json(students);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
@@ -117,4 +115,32 @@ const updateUserStatus = async (req, res) => {
   }
 };
 
-module.exports = { uploadCSV, login, listUsers, updateUserStatus };
+// Function to search users by userid, name, or email
+const searchUsers = async (req, res) => {
+  const { userid, name, email } = req.query;
+
+  try {
+    let query = {};
+
+    if (userid) {
+      query.userid = userid;
+    }
+    if (name) {
+      query.name = new RegExp(name, 'i'); // Case-insensitive search
+    }
+    if (email) {
+      query.email = email;
+    }
+
+    const users = await Student.find(query, '-password');
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching for users', error: error.message });
+  }
+};
+
+module.exports = { uploadCSV, login, listUsers, updateUserStatus, searchUsers };

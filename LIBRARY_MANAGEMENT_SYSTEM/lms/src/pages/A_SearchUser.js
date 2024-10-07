@@ -53,7 +53,6 @@ const A_SearchUsers = () => {
 
   return (
     <div>
-      {/* Header Section */}
       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
         <div className='h-full container mx-auto flex items-center px-4 justify-between'>
           <div className='flex items-center'>
@@ -66,7 +65,6 @@ const A_SearchUsers = () => {
         </div>
       </header>
 
-      {/* Main Content Section */}
       <div
         className="flex items-center justify-center min-h-screen bg-cover bg-center"
         style={{
@@ -79,7 +77,6 @@ const A_SearchUsers = () => {
           <h2 className="text-2xl font-bold text-center mb-6">Search Users</h2>
           <form onSubmit={handleSearch} className="mb-8">
             <div className="flex items-center">
-              {/* Dropdown for search type */}
               <select
                 className="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                 value={searchType}
@@ -90,7 +87,6 @@ const A_SearchUsers = () => {
                 <option value="email">Email</option>
               </select>
 
-              {/* Input field for search term */}
               <input
                 type="text"
                 className="ml-4 w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
@@ -100,7 +96,6 @@ const A_SearchUsers = () => {
                 required
               />
 
-              {/* Search button */}
               <button
                 type="submit"
                 className="ml-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
@@ -119,8 +114,12 @@ const A_SearchUsers = () => {
                 <thead>
                   <tr>
                     <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">User ID</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Username</th>
+                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Name</th>
                     <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Email</th>
+                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">DOB</th>
+                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Address</th>
+                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Phone No</th>
+                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Dept</th>
                     <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Status</th>
                     <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
@@ -128,14 +127,20 @@ const A_SearchUsers = () => {
                 <tbody>
                   {users.map((user) => (
                     <tr key={user._id}>
-                      <td className="py-2 px-4 border-b">{user.userid}</td>
-                      <td className="py-2 px-4 border-b">{user.name}</td>
-                      <td className="py-2 px-4 border-b">{user.email}</td>
-                      <td className="py-2 px-4 border-b">{user.status}</td>
-                      <td className="py-2 px-4 border-b">
+                      <td className="py-2 px-4 border-b text-sm">{user.userid}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.name}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.email}</td>
+                      <td className="py-2 px-4 border-b text-sm">{new Date(user.dob).toLocaleDateString()}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.address}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.phoneno}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.dept}</td>
+                      <td className="py-2 px-4 border-b text-sm">{user.status}</td>
+                      <td className="py-2 px-4 border-b text-sm">
                         <button
+                          className={`${
+                            user.status === 'Active' ? 'bg-red-500' : 'bg-green-500'
+                          } text-white px-4 py-2 rounded-lg`}
                           onClick={() => toggleStatus(user._id, user.status)}
-                          className="text-blue-500 hover:text-blue-700"
                         >
                           {user.status === 'Active' ? 'Deactivate' : 'Activate'}
                         </button>
