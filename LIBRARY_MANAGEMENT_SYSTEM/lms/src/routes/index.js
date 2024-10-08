@@ -1,130 +1,123 @@
-import { createBrowserRouter } from 'react-router-dom'
-import App from '../App'
-import Home from '../pages/Home'
-import Login from '../pages/Login'
-import ForgotPassword from '../pages/ForgotPassword'
-import Userpage from '../pages/Userpage'
-import AdminPage from '../pages/Adminpage'
-import AddUsers from '../pages/AddUsers'
-import U_searchbook from '../pages/U_searchbook'
-import A_ManageUser from '../pages/A_ManageUser'
-import A_ManageBooks from '../pages/A_ManageBooks'
-import AddBooks from '../pages/AddBooks'
-import U_periodicals from '../pages/U_periodicals'
-import U_searchperi from '../pages/U_searchperi'
-import Addstaff from '../pages/AddStaff'
-import StaffPage from '../pages/StaffPage'
-import About from '../pages/About'
-import Listbook from '../pages/Listbook'
-import Listuser from '../pages/Listuser'
-import SearchResults from '../pages/Searchresult'
-import A_SearchBook from '../pages/A_SearchBook'
-import A_SearchUsers from '../pages/A_SearchUser'
-
-
-
+import { createBrowserRouter } from 'react-router-dom';
+import App from '../App';
+import Home from '../pages/Home';
+import Login from '../pages/Login';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword'; // Add this import
+import Userpage from '../pages/Userpage';
+import AdminPage from '../pages/Adminpage';
+import AddUsers from '../pages/AddUsers';
+import U_searchbook from '../pages/U_searchbook';
+import A_ManageUser from '../pages/A_ManageUser';
+import A_ManageBooks from '../pages/A_ManageBooks';
+import AddBooks from '../pages/AddBooks';
+import U_periodicals from '../pages/U_periodicals';
+import U_searchperi from '../pages/U_searchperi';
+import Addstaff from '../pages/AddStaff';
+import StaffPage from '../pages/StaffPage';
+import About from '../pages/About';
+import Listbook from '../pages/Listbook';
+import Listuser from '../pages/Listuser';
+import SearchResults from '../pages/Searchresult';
+import A_SearchBook from '../pages/A_SearchBook';
+import A_SearchUsers from '../pages/A_SearchUser';
+import EditUserDetails from '../pages/EditUserDetails';
 
 const router = createBrowserRouter([
     {
-        path : "/",
-        element : <App/>,
-        children : [
+        path: "/",
+        element: <App />,
+        children: [
             {
-                path : "",
-                element : <Home/>
+                path: "",
+                element: <Home />
             },
             {
-                path : "about",
-                element : <About/>
+                path: "about",
+                element: <About />
             },
             {
-                path : "login",
-                element : <Login/>
-            },
-            
-        
-            {
-                path : "forgot-password",
-                element : <ForgotPassword/>
-            },
-            
-            {
-                path : "userpage",
-                element : <Userpage/>
+                path: "login",
+                element: <Login />
             },
             {
-                path : "StaffPage",
-                element : <StaffPage/>
-            },
-            
-            {
-                path : "adminpage",
-                element : <AdminPage/>
-            },
-
-            
-            {
-                path : "manage-users",
-                element : <A_ManageUser/>
+                path: "forgot-password",
+                element: <ForgotPassword />
             },
             {
-                path : "add-users",
-                element : <AddUsers/>
+                path: "reset-password/:token", // Add reset password route with dynamic token parameter
+                element: <ResetPassword />
             },
             {
-                path : "add-staff",
-                element : <Addstaff/>
-            },
-            
-            {
-                path : "userch",
-                element : <U_searchbook/>
+                path: "userpage",
+                element: <Userpage />
             },
             {
-                path : "UPeriodicals",
-                element : <U_periodicals/>
+                path: "StaffPage",
+                element: <StaffPage />
             },
             {
-                path : "manage-books",
-                element : <A_ManageBooks/>
-                
+                path: "adminpage",
+                element: <AdminPage />
             },
             {
-                path : "add-books",
-                element : <AddBooks/>
+                path: "manage-users",
+                element: <A_ManageUser />
             },
             {
-                path : "search-results",
-                element : <SearchResults/>
+                path: "add-users",
+                element: <AddUsers />
             },
             {
-                path : "U_searchperi",
-                element : <U_searchperi/>
+                path: "add-staff",
+                element: <Addstaff />
             },
             {
-                path : "listuser",
-                element : <Listuser/>
+                path: "userch",
+                element: <U_searchbook />
             },
             {
-                path : "listbook",
-                element : <Listbook/>
+                path: "UPeriodicals",
+                element: <U_periodicals />
             },
             {
-                path : "A_search",
-                element : <A_SearchBook/>
+                path: "manage-books",
+                element: <A_ManageBooks />
             },
             {
-                path : "searchuser",
-                element : <A_SearchUsers/>
+                path: "add-books",
+                element: <AddBooks />
             },
-            // {
-            //     path : "A_search",
-            //     element : <A_SearchBook/>
-            // },
-
+            {
+                path: "search-results",
+                element: <SearchResults />
+            },
+            {
+                path: "U_searchperi",
+                element: <U_searchperi />
+            },
+            {
+                path: "listuser",
+                element: <Listuser />
+            },
+            {
+                path: "listbook",
+                element: <Listbook />
+            },
+            {
+                path: "A_search",
+                element: <A_SearchBook />
+            },
+            {
+                path: "searchuser",
+                element: <A_SearchUsers />
+            },
+            {
+                path: "edit-user-details",
+                element: <EditUserDetails />
+            },
         ]
     }
-])
+]);
 
-export default router
-
+export default router;

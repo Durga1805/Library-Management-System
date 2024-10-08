@@ -5,6 +5,7 @@ const Student = require('../models/User');
 const moment = require('moment');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 // Function to handle CSV upload and user creation
@@ -25,9 +26,8 @@ const uploadCSV = async (req, res) => {
       })
       .on('end', async () => {
         for (let row of results) {
-          const dob = moment(row.dob, 'YYYY-MM-DD').toDate(); // Parse dob
+          const dob = moment(row.dob, 'YYYY-MM-DD').toDate();
 
-          // Check if the parsed date is valid
           if (!moment(dob).isValid()) {
             console.error(`Invalid date format for user ${row.name}: ${row.dob}`);
             return res.status(400).json({ message: `Invalid date format for user ${row.name}: ${row.dob}` });
@@ -42,7 +42,7 @@ const uploadCSV = async (req, res) => {
             email: row.email,
             dept: row.dept || 'DefaultDept',
             status: row.status || 'Active',
-            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Hash password
+            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10),
           });
 
           try {
@@ -70,13 +70,11 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ userId: user.userid }, process.env.JWT_SECRET || 'your_jwt_secret', {
       expiresIn: '1h',
     });
@@ -90,7 +88,7 @@ const login = async (req, res) => {
 // Function to get users without password
 const listUsers = async (req, res) => {
   try {
-    const students = await Student.find({}, '-password'); // Exclude password field
+    const students = await Student.find({}, '-password');
     res.status(200).json(students);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
@@ -121,16 +119,9 @@ const searchUsers = async (req, res) => {
 
   try {
     let query = {};
-
-    if (userid) {
-      query.userid = userid;
-    }
-    if (name) {
-      query.name = new RegExp(name, 'i'); // Case-insensitive search
-    }
-    if (email) {
-      query.email = email;
-    }
+    if (userid) query.userid = userid;
+    if (name) query.name = new RegExp(name, 'i');
+    if (email) query.email = email;
 
     const users = await Student.find(query, '-password');
     if (users.length === 0) {
@@ -143,4 +134,76 @@ const searchUsers = async (req, res) => {
   }
 };
 
-module.exports = { uploadCSV, login, listUsers, updateUserStatus, searchUsers };
+// Forgot Password - Send Reset Link
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await Student.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User with this email does not exist' });
+    }
+
+    const resetToken = jwt.sign({ userId: user.userid }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.ADMIN_EMAIL,
+      to: email,
+      subject: 'Password Reset Link',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p>
+             <a href="http://localhost:3000/reset-password/${resetToken}">Reset Password</a>
+             <p>This link is valid for 1 hour.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Password reset link sent to your email' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending reset email', error: error.message });
+  }
+};
+
+// Reset Password - Update Password
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const user = await Student.findOneAndUpdate(
+      { userid: decoded.userId },
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Password successfully updated' });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({ message: 'Reset token expired' });
+    }
+    res.status(500).json({ message: 'Error resetting password', error: error.message });
+  }
+};
+
+module.exports = {
+  uploadCSV,
+  login,
+  listUsers,
+  updateUserStatus,
+  searchUsers,
+  forgotPassword,
+  resetPassword,
+};

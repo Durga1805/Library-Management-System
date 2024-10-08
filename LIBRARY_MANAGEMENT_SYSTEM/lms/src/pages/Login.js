@@ -14,7 +14,7 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
 
-    if(email === 'admin@mca.in' && password==='Admin@2025'){
+    if (email === 'admin@mca.in' && password === 'Admin@2025') {
       navigate('/Adminpage');
     }
 
@@ -22,7 +22,6 @@ const Login = () => {
       const response = await axios.post('http://localhost:8080/api/login', { email, password });
       console.log(response.data); // Log the response for debugging
       if (response.data.success) {
-        // Store userId in local storage (from API response)
         localStorage.setItem('userId', response.data.userId); // Store userId instead of userName
         navigate('/userpage');
       } else {
@@ -44,7 +43,6 @@ const Login = () => {
           <nav className="flex space-x-4">
             <Link to="/" className="text-white hover:text-gray-200 mx-2">Home</Link>
             <Link to="/about" className="text-white hover:text-gray-200 mx-2">About</Link>
-            
           </nav>
         </div>
       </header>
@@ -89,6 +87,12 @@ const Login = () => {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+          {/* Forgot Password Link */}
+          <div className="text-center mt-4">
+            <Link to="/forgot-password" className="text-blue-500 hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
         </div>
       </div>
     </>
