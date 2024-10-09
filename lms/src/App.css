@@ -1,0 +1,56 @@
+
+/* General App styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
+  .App {
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    min-height: 100%;
+  }
+  
+  /* Main content section */
+  .main {
+    min-height: calc(100vh - 60px); /* Adjust height considering header/footer */
+    padding-top: 0; /* Remove any padding that may cause white space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensures main content is centered */
+  }
+  
+  /* Header styling (if needed) */
+  header {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  /* Footer styling */
+  .footer {
+    background-color: #282c34;
+    padding: 1rem;
+    color: white;
+    text-align: center;
+  }
+  
+  /* Links */
+  .App-link {
+    color: #61dafb;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .App-link:hover {
+    color: #21a1f1;
+  }
+  
+  /* Responsive design adjustments */
+  @media (max-width: 768px) {
+    .main {
+      padding-top: 2rem;
+    }
+  }
+  

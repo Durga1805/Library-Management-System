@@ -1,0 +1,17 @@
+userid,name,dob,address,phoneno,startdate,enddate,email,password,dept,semid,status
+15200,Akash Libu,22-04-2002,123 Main St.,9075861781,01-09-2023,31-05-2025,akashlibu2025@mca.ajce.in,Passw@1234,MCA,3,Active
+15201,Abhidarsh,12-05-2001,456 Oak St.,9876543210,01-09-2023,31-05-2025,abhidarsh2025@mca.ajce.in,Passw@1235,MCA,3,Active
+15202,Alan Siby,15-08-2000,789 Pine St.,6238234720,01-09-2023,31-05-2025,alansiby2025@mca.ajce.in,Passw@1236,MCA,3,Active
+15203,Amrutha Sheji,12-01-2003,"Vadavathikkal, Peroor",8136942160,01-09-2023,31-05-2025,amruthasheji2025@mca.ajce.in,Passw@1237,MCA,3,Active
+15204,Amalda Patrick,31-07-2002,"Puthanpurayil, Pala",9562290332,01-09-2023,31-05-2025,amaldapatrick2025@mca.ajce.in,Passw@1238,MCA,3,Active
+15205,Diona Tens,17-08-2000,123 Idukki,8281402179,01-09-2023,31-05-2025,dionatens2025@mca.ajce.in,Passw@1239,MCA,3,Active
+15206,Divya Antony,19-02-2002,"KTM, Kottyam",8921110551,01-09-2023,31-05-2025,divyaantony2025@mca.ajce.in,Passw@1240,MCA,3,Active
+15207,Don Tomy,05-09-2000,"Kattappana, Idukki",9074729826,01-09-2023,31-05-2025,dontomy2025@mca.ajce.in,Passw@1241,MCA,3,Active
+15208,Durga S,18-05-2003,Vadasseri Illam Vadasserikara,7561076575,01-09-2023,31-05-2025,durgas2025@mca.ajce.in,Passw@1242,MCA,3,Active
+15209,Ebin Berlin,23-09-2000,"Fort Kochi, EK",6895741238,01-09-2023,31-05-2025,ebinberlin2025@mca.ajce.in,Passw@1243,MCA,3,Active
+15210,Fathima P S,25-10-2000,"Koovapalli, KTM",7736686345,01-09-2023,31-05-2025,fathimas2025@mca.ajce.in,Passw@1244,MCA,3,Active
+15211,Gayathri G,13-03-2002,"Kodungoor, KTM",9865741230,01-09-2023,31-05-2025,gayathrig2025@mca.ajce.in,Passw@1245,MCA,3,Active
+15212,Jeel J Paul,28-02-2002,"Northhouse, Vayanad",8590938035,01-09-2023,31-05-2025,jeelpaul2025@mca.ajce.in,Passw@1246,MCA,3,Active
+15213,Jobinamol Jaimon,19-08-2002,"Cherthala, Alappy",9207541572,01-09-2023,31-05-2025,jobinamoljaimon2025@mca.ajce.in,Passw@1247,MCA,3,Active
+15214,Mariya Jose,21-11-2000,"Thodupuzha, EK",7907868789,01-09-2023,31-05-2025,mariyajose2025@mca.ajce.in,Passw@1248,MCA,3,Active
+15215,Teena Thomas,16-09-2000,"Punaloor, Kollam",7559926109,01-09-2023,31-05-2025,teenathomas2025@mca.ajce.in,Passw@1249,MCA,3,Active

@@ -1,0 +1,6 @@
+accno,call_no,title,year_of_publication,author,publisher,isbn,no_of_pages,price,dept,cover_type,status
+1,98765,Advanced Database Systems,2016,Raghu Ramakrishnan,McGraw-Hill,9780071232592,832,800,Computer Science,Hardcover,Active
+2,87654,Operating System Concepts,2021,Abraham Silberschatz,Wiley,9781119804545,976,950,Information Technology,Paperback,Active
+3,76543,Computer Networks,2017,Andrew S. Tanenbaum,Prentice Hall,9780133499451,960,700,Computer Science,Hardcover,Active
+4,65432,Machine Learning,2019,Tom M. Mitchell,McGraw-Hill,9780070428075,432,670,Information Technology,Paperback,Active
+5,54321,Software Engineering,2018,Ian Sommerville,Pearson,9780133943030,800,820,Software Engineering,Hardcover,Active
