@@ -24,6 +24,9 @@ import A_ManageStaffs from '../pages/A_ManageStaff'
 import EditUserDetails from '../pages/EditUserDetails'
 import ListStaff from '../pages/listStaff'
 import SearchStaff from '../pages/A_SearchStaff'
+import S_searchbook from '../pages/S_searchbook'
+import S_searchesult from '../pages/S_Searchresult'
+import S_Searchresult from '../pages/S_Searchresult'
 
 
 
@@ -134,6 +137,14 @@ const router = createBrowserRouter([
             {
                 path : "searchstaff",
                 element : <SearchStaff/>
+            },
+            {
+                path : "sserch",
+                element : <S_searchbook/>
+            },
+            {
+                path : "search-books",
+                element : <S_Searchresult/>
             },
 
         ]

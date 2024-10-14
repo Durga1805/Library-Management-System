@@ -10,53 +10,61 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Function for email-password based login
   const handleLogin = async (event) => {
     event.preventDefault();
-    setLoading(true);
-  if (email === 'admin@mca.in' && password === 'Admin@2025'){
-    navigate('/adminpage');
-  }else{
-    try {
-      const response = await axios.post('http://localhost:8080/api/login', { email, password });
-      console.log(response.data);
-      if (response.data.success) {
-        localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('role', response.data.role || 'user'); // Store the role
-        // Redirect based on role
-        if (response.data.role === 'admin') {
-          navigate('/userpage'); // Redirect to Admin Page
+    setLoading(true);  // Show loading during request
+
+    // Hardcoded Admin login
+    if (email === 'admin@mca.in' && password === 'Admin@2025') {
+      navigate('/adminpage');
+    }else if (email.includes('@amaljyothi.ac.in')) {
+      navigate('/staffpage'); 
+    }else {
+      try {
+        const response = await axios.post('http://localhost:8080/api/login', { email, password });
+        if (response.data.success) {
+          localStorage.setItem('userId', response.data.userId);
+          localStorage.setItem('role', response.data.role || 'user');
+
+          // Role-based navigation
+          if (response.data.role === 'admin') {
+            navigate('/adminpage');
+          } else if (response.data.role === 'staff') {
+            navigate('/staffpage');
+          } else {
+            navigate('/userpage');
+          }
         } else {
-          navigate('/userpage'); // Redirect to User Page
+          setMessage(response.data.message || 'Invalid Email or Password');
         }
-      } else {
-        setMessage(response.data.message || 'Invalid Email or Password');
+      } catch (error) {
+        setMessage('Invalid Email or Password');
+        console.error('Login Error:', error.response?.data?.message || error.message);
+      } finally {
+        setLoading(false);  // Hide loading after request
       }
-    } catch (error) {
-      setMessage('Invalid Email or Password');
-      console.error('Login Error:', error.response?.data?.message || error.message);
-    } finally {
-      setLoading(false);
-    }}
+    }
   };
-  
+
+  // Function for Google Login Success
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
+    setLoading(true);  // Show loading for Google login
 
-    setLoading(true); // Set loading state for Google login
     try {
-      const response = await axios.post('http://localhost:8080/api/google-login', {
-        tokenId: credential,
-      });
-
+      const response = await axios.post('http://localhost:8080/api/google-login', { tokenId: credential });
       if (response.data.success) {
         localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('role', response.data.role || 'user'); // Store the role
+        localStorage.setItem('role', response.data.role || 'user');
 
-        // Redirect based on role
+        // Role-based navigation for Google Login
         if (response.data.role === 'admin') {
-          navigate('/adminpage'); // Redirect to Admin Page
+          navigate('/adminpage');
+        } else if (response.data.role === 'staff') {
+          navigate('/staffpage');
         } else {
-          navigate('/userpage'); // Redirect to User Page
+          navigate('/userpage');
         }
       } else {
         setMessage('Google sign-in failed: ' + (response.data.message || ''));
@@ -65,10 +73,11 @@ const Login = () => {
       setMessage('Google sign-in failed');
       console.error('Google Login Error:', error.response?.data?.message || error.message);
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);  // Hide loading after request
     }
   };
 
+  // Function for Google Login Failure
   const handleGoogleLoginFailure = (error) => {
     setMessage('Google sign-in failed');
     console.error('Google Login Error:', error);
@@ -77,6 +86,7 @@ const Login = () => {
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
       <>
+        {/* Header */}
         <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
           <div className='h-full container mx-auto flex items-center px-4 justify-between'>
             <h1 className="text-white text-xl font-bold">Library Management System</h1>
@@ -87,17 +97,20 @@ const Login = () => {
           </div>
         </header>
 
+        {/* Login Form */}
         <div 
           className="flex items-center justify-center min-h-screen"
           style={{
             backgroundImage: `url(${require('../assets/lms3.jpg')})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            paddingTop: '4rem'
           }}
         >
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
             <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
             {message && <p className="text-red-500 text-center mb-4">{message}</p>}
+            
             <form onSubmit={handleLogin}>
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -128,12 +141,14 @@ const Login = () => {
               </button>
             </form>
 
+            {/* Forgot Password Link */}
             <div className="mt-4 text-center">
               <Link to="/forgotpassword" className="text-blue-500 hover:underline">
                 Forgot Password?
               </Link>
             </div>
 
+            {/* Google Login Button */}
             <div className="mt-6">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}

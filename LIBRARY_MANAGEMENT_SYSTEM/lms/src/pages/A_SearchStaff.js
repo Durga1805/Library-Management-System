@@ -113,7 +113,7 @@ const A_SearchStaff = () => {
                 ))}
               </ul>
             ) : (
-              !loading && !error && <p>No results found</p> // Add error condition to ensure only if no results and no error
+              !loading  // Add error condition to ensure only if no results and no error
             )}
           </div>
         </div>
