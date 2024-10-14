@@ -39,7 +39,7 @@ const A_ManageStaffs = () => {
           <h1 className="text-4xl font-bold text-red-700 mb-8">Staff Details</h1>
           <div className="flex flex-col items-center space-y-4">
             <Link 
-              to="/add-Staff"
+              to="/addstaff"
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               Staff

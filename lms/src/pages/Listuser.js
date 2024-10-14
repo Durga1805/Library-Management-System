@@ -62,7 +62,7 @@ function ListUsers() {
         }}
       >
         <div className="container mx-auto p-4 mt-16">
-          <h1 className="text-4xl font-bold mb-4 text-white">List of Users</h1>
+          <h1 className="text-4xl font-bold mb-4 text-white">List of Students</h1>
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
             <thead>
               <tr>

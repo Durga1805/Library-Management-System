@@ -27,13 +27,14 @@ function AddStaff() {
     e.preventDefault();
 
     try {
-      const response = await fetch('/api/addstaff', {
+      const response = await fetch('http://localhost:8080/api/addstaff', { // use port 5000
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+      
 
       if (response.ok) {
         alert('Staff registered successfully!');
