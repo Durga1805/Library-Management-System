@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const UserPage = () => {
   const navigate = useNavigate();
-  const userId = localStorage.getItem('userId') || 'User'; // Use userId instead of userName
+  const userId = localStorage.getItem('userId') || 'User'; // Get userId from local storage
+  const profilePic = localStorage.getItem('profilePic'); // Get profile picture from local storage
 
   const handleLogout = () => {
     localStorage.removeItem('userId'); // Clear userId from local storage
+    localStorage.removeItem('profilePic'); // Optional: Clear profilePic if desired
     navigate('/login'); // Redirect to the login page after logging out
   };
 
@@ -18,7 +20,25 @@ const UserPage = () => {
           <div className='flex items-center'>
             <h1 className="text-white text-xl font-bold">LMS</h1>
           </div>
-          <nav className="flex space-x-4">
+          <nav className="flex space-x-4 items-center">
+            {/* Profile Picture in Header */}
+            {profilePic ? (
+              <img 
+                src={profilePic} 
+                alt="Profile" 
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-white">P</span>
+              </div>
+            )}
+            <Link
+              to="/edit-user-details" // Route for editing user details
+              className="text-white hover:text-gray-200"
+            >
+              Edit
+            </Link>
             <button 
               onClick={handleLogout} 
               className="text-white hover:text-gray-200"
@@ -39,7 +59,7 @@ const UserPage = () => {
         }}
       >
         <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left">
-          <h2 className="text-2xl mb-8 text-black">Welcome UserId: {userId}</h2> {/* Display the user's name */}
+          <h2 className="text-2xl mb-8 text-black">Welcome UserId: {userId}</h2> {/* Display the user's ID */}
           <ul>
             <li className="mb-4">
               <Link 
@@ -51,15 +71,15 @@ const UserPage = () => {
             </li>
             <li className="mb-4">
               <Link 
-                to=""
+                to="/issued-books" // Assume you will implement this route
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
-                Issued Book
+                Issued Books
               </Link>
             </li>
             <li className="mb-4">
               <Link 
-                to=""
+                to="/feedback" // Assume you will implement this route
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Feedback
@@ -67,7 +87,7 @@ const UserPage = () => {
             </li>
             <li className="mb-4">
               <Link 
-                to=""
+                to="/history" // Assume you will implement this route
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 History

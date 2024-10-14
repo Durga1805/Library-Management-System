@@ -14,6 +14,7 @@ function AddStaff() {
     password: '',
   });
 
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,11 +24,68 @@ function AddStaff() {
     });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const today = new Date().toISOString().split("T")[0]; // Get today's date
+
+    if (!formData.userid.trim()) {
+      newErrors.userid = "User ID is required";
+    }
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name must contain only letters";
+    }
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else if (formData.dob > today) {
+      newErrors.dob = "Date of birth cannot be in the future";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!formData.phoneno.trim()) {
+      newErrors.phoneno = "Phone number is required";
+    } else if (!phoneRegex.test(formData.phoneno)) {
+      newErrors.phoneno = "Phone number must be 10 digits";
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = "Address is required";
+    }
+
+    if (!formData.dept.trim()) {
+      newErrors.dept = "Department is required";
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password = "Password must be at least 8 characters long and contain at least one letter and one number";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return; // Stop submission if form is invalid
+    }
 
     try {
-      const response = await fetch('/api/addstaff', {
+      const response = await fetch('http://localhost:5000/api/addstaff', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -56,7 +56,15 @@ const AdminPage = () => {
                 to="/manage-users"
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
-                Manage Users
+                Manage Students
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link
+                to="/manage-staffs"
+                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
+              >
+                Manage Staffs
               </Link>
             </li>
             <li className="mb-4">

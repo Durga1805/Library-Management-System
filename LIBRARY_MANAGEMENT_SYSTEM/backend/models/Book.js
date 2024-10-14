@@ -1,4 +1,3 @@
-// LIBRARY_MANAGEMENT_SYSTEM\backend\models\Book.js
 const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
@@ -13,7 +12,7 @@ const bookSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   dept: { type: String, required: true },
   cover_type: { type: String, required: true },
-  status: { type: String, enum: ['Active', 'Deactive'], required: true },
+  status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], required: true }, // Include 'Reserved' status
 });
 
-module.exports = mongoose.model('Book', bookSchema);  
+module.exports = mongoose.model('Book', bookSchema);

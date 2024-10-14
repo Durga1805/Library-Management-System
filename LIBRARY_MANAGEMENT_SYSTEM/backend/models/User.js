@@ -1,3 +1,4 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\models\User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -10,6 +11,7 @@ const userSchema = new mongoose.Schema({
   dept: { type: String, required: true },
   status: { type: String, required: true },
   password: { type: String, required: true },
+  profilePic: { type: Buffer },  // Storing image as Buffer
 });
 
 const Student = mongoose.model('Students', userSchema, 'Students');

@@ -1,10 +1,20 @@
 // LIBRARY_MANAGEMENT_SYSTEM\backend\routes\userRoutes.js
 const express = require('express');
 const multer = require('multer');
-const { uploadCSV, login, listUsers, updateUserStatus, searchUsers } = require('../controllers/userController');
+const {
+  uploadCSV,
+  login,
+  listUsers,
+  updateUserStatus,
+  searchUsers,
+  updateUserProfile,
+} = require('../controllers/userController');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+
+// Multer setup to handle file uploads (CSV and profile pictures)
+const storage = multer.memoryStorage();  // Store files in memory as buffer
+const upload = multer({ storage });
 
 // POST route for uploading CSV file
 router.post('/upload-csv', upload.single('csvFile'), uploadCSV);
@@ -20,5 +30,8 @@ router.put('/users/:userId/status', updateUserStatus);
 
 // GET route for searching users
 router.get('/users/search', searchUsers);
+
+// PUT route for updating user profile, including profile picture
+router.put('/users/profile', upload.single('profilePic'), updateUserProfile);
 
 module.exports = router;

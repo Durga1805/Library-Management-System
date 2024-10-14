@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { uploadBooksCSV, listBooks, searchBooks, updateBookStatus } = require('../controllers/bookController');
+const { uploadBooksCSV, listBooks, searchBooks, updateBookStatus, reserveBook } = require('../controllers/bookController');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' }); // Temporary upload folder
@@ -14,7 +14,10 @@ router.get('/books', listBooks);
 // GET route for searching books
 router.get('/books/search', searchBooks);
 
-// PUT route to update the status of a book (Active/Deactive)
-router.put('/books/:id/status', updateBookStatus); // New route
+// PUT route to update the status of a book
+router.put('/books/:id/status', updateBookStatus);
+
+// POST route to reserve a book
+router.post('/books/:bookId/reserve', reserveBook);
 
 module.exports = router;

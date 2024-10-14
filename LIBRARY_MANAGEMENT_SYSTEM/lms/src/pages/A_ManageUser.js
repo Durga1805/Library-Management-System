@@ -36,7 +36,7 @@ const A_ManageUser = () => {
         }}
       >
         <div className="text-center bg-white bg-opacity-80 p-12 rounded-lg shadow-lg w-full max-w-lg">
-          <h1 className="text-4xl font-bold text-red-700 mb-8">User Details</h1>
+          <h1 className="text-4xl font-bold text-red-700 mb-8">Students Details</h1>
           <div className="flex flex-col items-center space-y-4">
             <Link 
               to="/add-users"
