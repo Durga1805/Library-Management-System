@@ -6,6 +6,7 @@ import backgroundImage from '../assets/user.jpg';
 const SearchResults = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reserveLoading, setReserveLoading] = useState(''); // To track loading per book reservation
   const [error, setError] = useState('');
   const navigate = useNavigate(); // To navigate after logout
 
@@ -16,11 +17,10 @@ const SearchResults = () => {
 
   // Function to handle logout
   const handleLogout = () => {
-    // Remove the token from localStorage
+    // Remove the token and user details from localStorage
     localStorage.removeItem('token');
-    
-    // Optional: Inform the backend (if required)
-    // axios.post('http://localhost:8080/api/logout') // Uncomment if needed
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userType');
     
     // Redirect to login page
     navigate('/login');
@@ -32,7 +32,7 @@ const SearchResults = () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/books/search`, {
           params: { type: searchType, query: searchQuery },
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Include token in request if necessary
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Include token in request
         });
 
         if (response.data.length === 0) {
@@ -56,10 +56,25 @@ const SearchResults = () => {
   }, [searchType, searchQuery]);
 
   const handleReserve = async (bookId) => {
+    // Get userId and userType from localStorage
+    const userId = localStorage.getItem('userId');
+    const userType = localStorage.getItem('userType');
+
+    // Ensure user data is available
+    if (!userId || !userType) {
+      setError('User information is missing. Please log in again.');
+      return;
+    }
+
     try {
-      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {}, {
+      setReserveLoading(bookId); // Set loading for the specific book being reserved
+      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
+        userId,
+        userType
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
+
       if (response.status === 200) {
         setResults((prevResults) =>
           prevResults.map((book) =>
@@ -70,6 +85,9 @@ const SearchResults = () => {
       }
     } catch (error) {
       console.error('Error reserving the book:', error);
+      setError('Error reserving the book. Please try again.');
+    } finally {
+      setReserveLoading(''); // Clear loading after the request is completed
     }
   };
 
@@ -115,7 +133,13 @@ const SearchResults = () => {
                       {book.status === 'Deactive' ? (
                         <span className="text-gray-500">Unavailable</span>
                       ) : book.status !== 'Reserved' ? (
-                        <button onClick={() => handleReserve(book._id)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Reserve</button>
+                        <button 
+                          onClick={() => handleReserve(book._id)} 
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                          disabled={reserveLoading === book._id}
+                        >
+                          {reserveLoading === book._id ? 'Reserving...' : 'Reserve'}
+                        </button>
                       ) : (
                         <span className="text-red-500">Reserved</span>
                       )}

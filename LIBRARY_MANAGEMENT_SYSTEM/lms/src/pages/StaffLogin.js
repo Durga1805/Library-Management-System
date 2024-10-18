@@ -1,0 +1,118 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { FcGoogle } from 'react-icons/fc'; // Google icon for the button
+
+const StaffLogin = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Handle staff login
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/staff/staff-login', { email, password });
+      if (response.data.success) {
+        localStorage.setItem('staffId', response.data.staffId);
+        navigate('/staffpage');
+      } else {
+        setMessage('Invalid Email or Password');
+      }
+    } catch (error) {
+      setMessage('Error logging in');
+      console.error('Login Error:', error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Google Sign-In (add Google OAuth logic)
+  const handleGoogleSignIn = () => {
+    console.log('Google Sign-In');
+    // Add your Google OAuth logic here
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
+        <div className="h-full container mx-auto flex items-center px-4 justify-between">
+          <h1 className="text-white text-xl font-bold">Library Management System</h1>
+          <nav className="flex space-x-4">
+            <Link to="/" className="text-white hover:text-gray-200 mx-2">Home</Link>
+            <Link to="/about" className="text-white hover:text-gray-200 mx-2">About</Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Login Form */}
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{
+          backgroundImage: `url(${require('../assets/lms3.jpg')})`, // Background image path
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          paddingTop: '5rem' // Adjust to account for the fixed header
+        }}
+      >
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-6 text-center">Staff Login</h2>
+          {message && <p className="text-red-500 text-center mb-4">{message}</p>}
+          <form onSubmit={handleLogin}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+              <input
+                type="email"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+              <input
+                type="password"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          {/* Forgot Password */}
+          <div className="text-center mt-4">
+            <Link to="/forgotpassword" className="text-sm text-blue-500 hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
+
+          {/* Google Sign-In */}
+          <div className="text-center mt-6">
+            <button
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center bg-gray-100 py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-300"
+            >
+              <FcGoogle className="mr-2" /> Sign in with Google
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StaffLogin;

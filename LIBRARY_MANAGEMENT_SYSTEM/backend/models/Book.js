@@ -1,3 +1,5 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\models\Book.js
+
 const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
@@ -12,7 +14,10 @@ const bookSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   dept: { type: String, required: true },
   cover_type: { type: String, required: true },
-  status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], required: true }, // Include 'Reserved' status
+  status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], default: 'Active' },
+  reservedByStudent: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+  reservedByStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
+  reservationDate: { type: Date }
 });
 
 module.exports = mongoose.model('Book', bookSchema);

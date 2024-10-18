@@ -6,6 +6,7 @@ import backgroundImage from '../assets/Staff.jpg';
 const S_Searchresult = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reserveLoading, setReserveLoading] = useState(''); // To track loading per book
   const [error, setError] = useState('');
   const navigate = useNavigate(); // To navigate after logout
 
@@ -16,11 +17,10 @@ const S_Searchresult = () => {
 
   // Function to handle logout
   const handleLogout = () => {
-    // Remove the token from localStorage
+    // Remove the token and user data from localStorage
     localStorage.removeItem('token');
-    
-    // Optional: Inform the backend (if required)
-    // axios.post('http://localhost:8080/api/logout') // Uncomment if needed
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userType');
     
     // Redirect to login page
     navigate('/login');
@@ -32,7 +32,7 @@ const S_Searchresult = () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/books/search`, {
           params: { type: searchType, query: searchQuery },
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Include token in request if necessary
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Include token in request
         });
 
         if (response.data.length === 0) {
@@ -56,10 +56,25 @@ const S_Searchresult = () => {
   }, [searchType, searchQuery]);
 
   const handleReserve = async (bookId) => {
+    // Get userId and userType from localStorage
+    const userId = localStorage.getItem('userId');
+    const userType = localStorage.getItem('userType');
+
+    // Ensure user data is available
+    if (!userId || !userType) {
+      setError('User information is missing. Please log in again.');
+      return;
+    }
+
     try {
-      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {}, {
+      setReserveLoading(bookId); // Set loading for the specific book being reserved
+      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
+        userId,
+        userType
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
+
       if (response.status === 200) {
         setResults((prevResults) =>
           prevResults.map((book) =>
@@ -69,7 +84,9 @@ const S_Searchresult = () => {
         console.log('Book reserved successfully');
       }
     } catch (error) {
-      console.error('Error reserving the book:', error);
+      setError('Error reserving the book. Please try again.');
+    } finally {
+      setReserveLoading(''); // Clear loading after the request is completed
     }
   };
 
@@ -80,7 +97,7 @@ const S_Searchresult = () => {
     <div className="min-h-screen" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <header className="bg-blue-600 p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-white text-2xl font-bold">Library Management System</h1>
+          <h1 className="text-white text-2xl font-bold">LMS</h1>
           <nav className="flex space-x-4">
             <Link to="/staffpage" className="text-white hover:text-gray-300">Back</Link>
             <button onClick={handleLogout} className="text-white hover:text-gray-300" aria-label="Logout">Logout</button>
@@ -115,7 +132,13 @@ const S_Searchresult = () => {
                       {book.status === 'Deactive' ? (
                         <span className="text-gray-500">Unavailable</span>
                       ) : book.status !== 'Reserved' ? (
-                        <button onClick={() => handleReserve(book._id)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Reserve</button>
+                        <button 
+                          onClick={() => handleReserve(book._id)} 
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                          disabled={reserveLoading === book._id}
+                        >
+                          {reserveLoading === book._id ? 'Reserving...' : 'Reserve'}
+                        </button>
                       ) : (
                         <span className="text-red-500">Reserved</span>
                       )}

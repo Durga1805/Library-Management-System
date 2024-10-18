@@ -10,44 +10,31 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Function for email-password based login
+  // Function for email-password based login (for user login only)
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);  // Show loading during request
 
-    // Hardcoded Admin login
-    if (email === 'admin@mca.in' && password === 'Admin@2025') {
-      navigate('/adminpage');
-    }else if (email.includes('@amaljyothi.ac.in')) {
-      navigate('/staffpage'); 
-    }else {
-      try {
-        const response = await axios.post('http://localhost:8080/api/login', { email, password });
-        if (response.data.success) {
-          localStorage.setItem('userId', response.data.userId);
-          localStorage.setItem('role', response.data.role || 'user');
-
-          // Role-based navigation
-          if (response.data.role === 'admin') {
-            navigate('/adminpage');
-          } else if (response.data.role === 'staff') {
-            navigate('/staffpage');
-          } else {
-            navigate('/userpage');
-          }
-        } else {
-          setMessage(response.data.message || 'Invalid Email or Password');
-        }
-      } catch (error) {
-        setMessage('Invalid Email or Password');
-        console.error('Login Error:', error.response?.data?.message || error.message);
-      } finally {
-        setLoading(false);  // Hide loading after request
+    try {
+      const response = await axios.post('http://localhost:8080/api/login', { email, password });
+      if (response.data.success) {
+        localStorage.setItem('userId', response.data.userId);
+        localStorage.setItem('role', 'user');  // Default to user role
+        
+        // Navigate to user page after successful login
+        navigate('/userpage');
+      } else {
+        setMessage(response.data.message || 'Invalid Email or Password');
       }
+    } catch (error) {
+      setMessage('Invalid Email or Password');
+      console.error('Login Error:', error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);  // Hide loading after request
     }
   };
 
-  // Function for Google Login Success
+  // Function for Google Login Success (for user login only)
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
     setLoading(true);  // Show loading for Google login
@@ -56,16 +43,10 @@ const Login = () => {
       const response = await axios.post('http://localhost:8080/api/google-login', { tokenId: credential });
       if (response.data.success) {
         localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('role', response.data.role || 'user');
+        localStorage.setItem('role', 'user');  // Default to user role
 
-        // Role-based navigation for Google Login
-        if (response.data.role === 'admin') {
-          navigate('/adminpage');
-        } else if (response.data.role === 'staff') {
-          navigate('/staffpage');
-        } else {
-          navigate('/userpage');
-        }
+        // Navigate to user page after successful Google login
+        navigate('/userpage');
       } else {
         setMessage('Google sign-in failed: ' + (response.data.message || ''));
       }
@@ -108,7 +89,7 @@ const Login = () => {
           }}
         >
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">User Login</h2>
             {message && <p className="text-red-500 text-center mb-4">{message}</p>}
             
             <form onSubmit={handleLogin}>

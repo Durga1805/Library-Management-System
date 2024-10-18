@@ -1,4 +1,5 @@
-// controllers/staffController.js
+
+// LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\staffController.js
 const Staff = require('../models/Staff');
 const bcrypt = require('bcrypt');
 
@@ -36,17 +37,40 @@ const addStaff = async (req, res) => {
   }
 };
 
-
 // List All Staff Members Controller
 const listStaff = async (req, res) => {
-    try {
-      // Fetch all staff members from the database
-      const staffList = await Staff.find({});
-      res.status(200).json(staffList); // Send the list as JSON response
-    } catch (error) {
-      console.error('Error fetching staff list:', error);
-      res.status(500).json({ message: 'Server error while fetching staff list' });
+  try {
+    const staffList = await Staff.find({});
+    res.status(200).json(staffList);
+  } catch (error) {
+    console.error('Error fetching staff list:', error);
+    res.status(500).json({ message: 'Server error while fetching staff list' });
+  }
+};
+
+// Staff Login Controller
+const loginStaff = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find staff by email
+    const staff = await Staff.findOne({ email });
+    if (!staff) {
+      return res.status(400).json({ message: 'Staff member not found' });
     }
-  };
-  
-  module.exports = { addStaff, listStaff };
+
+    // Check if the password matches
+    const isPasswordValid = await bcrypt.compare(password, staff.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    // Send response with staffId if successful
+    res.status(200).json({ success: true, staffId: staff._id });
+  } catch (error) {
+    console.error('Error logging in staff:', error);
+    res.status(500).json({ message: 'Server error while logging in' });
+  }
+};
+
+module.exports = { addStaff, listStaff, loginStaff };

@@ -58,22 +58,8 @@ const U_searchbook = () => {
 
         {/* Tabs for Books and Periodicals */}
         <div className="flex mb-4 justify-center space-x-4">
-          <button
-            onClick={() => handleTabClick('userch')}
-            className={`text-lg font-semibold py-2 px-6 rounded-md transition duration-150 ${
-              activeTab === 'userch' ? 'bg-gray-300 text-blue-600 shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Books
-          </button>
-          <button
-            onClick={() => handleTabClick('UPeriodicals')}
-            className={`text-lg font-semibold py-2 px-6 rounded-md transition duration-150 ${
-              activeTab === 'UPeriodicals' ? 'bg-gray-300 text-blue-600 shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Periodicals
-          </button>
+        
+          
         </div>
 
         {/* Search Section */}

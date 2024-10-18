@@ -1,11 +1,20 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const navigate = useNavigate(); // Initialize navigate function
+  const navigate = useNavigate(); 
+  const [showDropdown, setShowDropdown] = useState(false); // State to show/hide the dropdown
 
-  const handleLoginClick = () => {
-    navigate('/login'); // Navigate to login page on button click
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown); // Toggle dropdown visibility
+  };
+
+  const handleOptionClick = (role) => {
+    if (role === 'staff') {
+      navigate('/staff-login'); // Navigate to staff login page
+    } else if (role === 'student') {
+      navigate('/login'); // Navigate to student login page
+    }
   };
 
   return (
@@ -21,13 +30,29 @@ const Home = () => {
       {/* Header Section */}
       <header className="w-full p-4 bg-gradient-to-r from-blue-500 to-red-500 text-white flex items-center justify-between">
         <h1 className="text-2xl font-bold">LMS</h1>
-        <div className="flex items-center space-x-4">
+        <div className="relative">
           <button 
             className="bg-white text-blue-500 px-4 py-2 rounded" 
-            onClick={handleLoginClick} // Add onClick event for navigation
+            onClick={toggleDropdown} // Toggle dropdown on click
           >
             Login
           </button>
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
+              <button 
+                className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
+                onClick={() => handleOptionClick('staff')} // Staff login
+              >
+                Staff Login
+              </button>
+              <button 
+                className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
+                onClick={() => handleOptionClick('student')} // Student login
+              >
+                Student Login
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -39,6 +64,6 @@ const Home = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Home;

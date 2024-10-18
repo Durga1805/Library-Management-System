@@ -57,6 +57,12 @@ const A_ManageBooks = () => {
             >
               LIST
             </Link>
+            <Link 
+              to="/reserved"
+              className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Reserved Books
+            </Link>
           </div>
         </div>
       </div>

@@ -34,7 +34,7 @@ const S_searchbook = () => {
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-white text-2xl font-bold">Library Management System</h1>
           <nav className="flex space-x-4">
-            <Link to="/userpage" className="text-white hover:text-gray-300">Back</Link>
+            <Link to="/staffpage" className="text-white hover:text-gray-300">Back</Link>
             <button onClick={handleLogout} className="text-white hover:text-gray-300">Logout</button>
           </nav>
         </div>
@@ -57,24 +57,7 @@ const S_searchbook = () => {
         </div>
 
         {/* Tabs for Books and Periodicals */}
-        <div className="flex mb-4 justify-center space-x-4">
-          <button
-            onClick={() => handleTabClick('userch')}
-            className={`text-lg font-semibold py-2 px-6 rounded-md transition duration-150 ${
-              activeTab === 'userch' ? 'bg-gray-300 text-blue-600 shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Books
-          </button>
-          <button
-            onClick={() => handleTabClick('UPeriodicals')}
-            className={`text-lg font-semibold py-2 px-6 rounded-md transition duration-150 ${
-              activeTab === 'UPeriodicals' ? 'bg-gray-300 text-blue-600 shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Periodicals
-          </button>
-        </div>
+        
 
         {/* Search Section */}
         <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-xl mx-auto flex flex-col space-y-4 mb-4">

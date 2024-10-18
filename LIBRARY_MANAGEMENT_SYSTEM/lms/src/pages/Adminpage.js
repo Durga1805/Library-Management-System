@@ -67,38 +67,8 @@ const AdminPage = () => {
                 Manage Staffs
               </Link>
             </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Manage Periodicals
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Holidays
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Borrowing And Return
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Visitor Tracking
-              </Link>
-            </li>
+            
+           
             <li className="mb-4">
               <Link
                 to=""

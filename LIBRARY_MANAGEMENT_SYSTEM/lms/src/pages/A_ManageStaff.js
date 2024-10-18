@@ -52,12 +52,18 @@ const A_ManageStaffs = () => {
             >
               SEARCH
             </Link>
-
+            
             <Link 
               to="/liststaff"
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               LIST
+            </Link>
+            <Link 
+              to="/borrowing"
+              className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
+            >
+              Book issueing And Return
             </Link>
           </div>
         </div>

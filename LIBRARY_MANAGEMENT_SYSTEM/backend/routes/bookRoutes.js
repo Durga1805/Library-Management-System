@@ -1,6 +1,7 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\routes\bookRoutes.js
 const express = require('express');
 const multer = require('multer');
-const { uploadBooksCSV, listBooks, searchBooks, updateBookStatus, reserveBook } = require('../controllers/bookController');
+const { uploadBooksCSV, listBooks, searchBooks, updateBookStatus, reserveBook, getReservedBooks } = require('../controllers/bookController');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' }); // Temporary upload folder
@@ -18,6 +19,9 @@ router.get('/books/search', searchBooks);
 router.put('/books/:id/status', updateBookStatus);
 
 // POST route to reserve a book
-router.post('/books/:bookId/reserve', reserveBook);
+router.post('/books/:bookId/reserve', reserveBook); // Updated route for reserving a book
+
+// GET route for fetching all reserved books
+router.get('/books/reserved', getReservedBooks);
 
 module.exports = router;

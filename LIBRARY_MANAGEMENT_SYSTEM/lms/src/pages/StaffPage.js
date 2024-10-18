@@ -1,7 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StaffPage = () => {
+  const navigate = useNavigate(); 
+  const [name, setName] = useState(''); // State to hold the name
+
+  useEffect(() => {
+    // Retrieve the name from localStorage (assuming it was stored during login)
+    const storedName = localStorage.getItem('name'); // Ensure 'name' is stored during login
+    if (storedName) {
+      setName(storedName); // Set the name in state
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear token from localStorage
+    localStorage.removeItem('userId'); // Clear userId from localStorage
+    localStorage.removeItem('name'); // Clear name from localStorage
+    navigate('/'); // Navigate to the login or home page after logout
+  };
+
   return (
     <div>
       {/* Header Section */}
@@ -18,11 +36,7 @@ const StaffPage = () => {
               Profile
             </Link>
             <button 
-              onClick={() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('userId');
-                // You can navigate to login or home page after logout
-              }} 
+              onClick={handleLogout}  // Use the handleLogout function
               className="text-white hover:text-gray-200"
             >
               Logout
@@ -38,13 +52,14 @@ const StaffPage = () => {
           backgroundImage: `url(${require('../assets/Staff.jpg')})`,
         }}
       >
-        <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left mt-20">
+        <div className="bg-white bg-opacity-100 p-10 rounded-lg text-left mt-20">
           <h1 className="text-4xl font-bold mb-6 text-black">LMS</h1>
-          <h2 className="text-2xl mb-8 text-black">Welcome User!!</h2>
+          {/* Display name or fallback to 'User' */}
+          <h2 className="text-2xl mb-8 text-black">Welcome, {name ? name : 'User'}!</h2> 
           <ul>
             <li className="mb-4">
               <Link 
-                to="/sserch"
+                to="/ssearch"
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Search Books
