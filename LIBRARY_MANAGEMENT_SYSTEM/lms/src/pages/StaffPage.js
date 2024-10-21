@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+
 const StaffPage = () => {
   const navigate = useNavigate(); 
-  const [name, setName] = useState(''); // State to hold the name
+  const [name, setName] = useState('');
 
   useEffect(() => {
-    // Retrieve the name from localStorage (assuming it was stored during login)
-    const storedName = localStorage.getItem('name'); // Ensure 'name' is stored during login
+    // Retrieve the name and token from localStorage
+    const storedName = localStorage.getItem('name');
+    const tokenExpiration = localStorage.getItem('tokenExpiration');
+    const currentTime = new Date().getTime();
+
     if (storedName) {
-      setName(storedName); // Set the name in state
+      setName(storedName);
+    }
+
+    // Check if the token has expired
+    if (!tokenExpiration || currentTime > tokenExpiration) {
+      handleLogout(); // Auto-logout if token is expired
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Clear token from localStorage
-    localStorage.removeItem('userId'); // Clear userId from localStorage
-    localStorage.removeItem('name'); // Clear name from localStorage
-    navigate('/'); // Navigate to the login or home page after logout
+    localStorage.removeItem('token');
+    localStorage.removeItem('staffId');
+    localStorage.removeItem('name');
+    localStorage.removeItem('tokenExpiration');
+    navigate('/');
   };
 
   return (

@@ -15,9 +15,7 @@ const bookSchema = new mongoose.Schema({
   dept: { type: String, required: true },
   cover_type: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], default: 'Active' },
-  reservedByStudent: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
-  reservedByStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
-  reservationDate: { type: Date }
+  reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to the user or staff
+  reservedAt: { type: Date }
 });
-
 module.exports = mongoose.model('Book', bookSchema);

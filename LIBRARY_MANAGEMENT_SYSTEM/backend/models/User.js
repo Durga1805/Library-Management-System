@@ -14,8 +14,16 @@ const userSchema = new mongoose.Schema({
   profilePic: { type: Buffer },
   resetPasswordToken: { type: String }, // Field to store the token
   resetPasswordExpires: { type: Date },  // Storing image as Buffer
+  role: { type: String, default: 'student' }, // Role is either 'student' or 'staff'
+  reservedBooks: [
+    {
+      bookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
+      reservedAt: { type: Date, default: Date.now },
+    }
+  ]
 });
 
+ 
 const Student = mongoose.model('Students', userSchema, 'Students');
 
 module.exports = Student;

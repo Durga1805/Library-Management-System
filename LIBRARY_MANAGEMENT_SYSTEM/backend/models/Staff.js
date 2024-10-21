@@ -13,7 +13,14 @@ const staffSchema = new mongoose.Schema({
   status: { type: String, default: 'active' },
   password: { type: String, required: true },
   resetPasswordToken: { type: String }, // Field to store the token
-  resetPasswordExpires: { type: Date }, // hashed password
+  resetPasswordExpires: { type: Date },
+  role: { type: String, default: 'staff' },
+  reservedBooks: [
+    {
+      bookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
+      reservedAt: { type: Date, default: Date.now },
+    }
+  ]
 }, {
   timestamps: true,
 });

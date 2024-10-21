@@ -2,6 +2,7 @@
 // LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\staffController.js
 const Staff = require('../models/Staff');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Add Staff Controller
 const addStaff = async (req, res) => {
@@ -48,25 +49,49 @@ const listStaff = async (req, res) => {
   }
 };
 
-// Staff Login Controller
+// // Staff Login Controller
+// const loginStaff = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Find staff by email
+//     const staff = await Staff.findOne({ email });
+//     if (!staff) {
+//       return res.status(400).json({ message: 'Staff member not found' });
+//     }
+
+//     // Check if the password matches
+//     const isPasswordValid = await bcrypt.compare(password, staff.password);
+//     if (!isPasswordValid) {
+//       return res.status(400).json({ message: 'Invalid password' });
+//     }
+
+//     // Send response with staffId if successful
+//     res.status(200).json({ success: true, staffId: staff._id });
+//   } catch (error) {
+//     console.error('Error logging in staff:', error);
+//     res.status(500).json({ message: 'Server error while logging in' });
+//   }
+// };
+// const jwt = require('jsonwebtoken');
+
 const loginStaff = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Find staff by email
     const staff = await Staff.findOne({ email });
     if (!staff) {
       return res.status(400).json({ message: 'Staff member not found' });
     }
 
-    // Check if the password matches
     const isPasswordValid = await bcrypt.compare(password, staff.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    // Send response with staffId if successful
-    res.status(200).json({ success: true, staffId: staff._id });
+    // Generate token with expiration time (e.g., 1 hour)
+    const token = jwt.sign({ staffId: staff._id, name: staff.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ success: true, staffId: staff._id, token, name: staff.name });
   } catch (error) {
     console.error('Error logging in staff:', error);
     res.status(500).json({ message: 'Server error while logging in' });

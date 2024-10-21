@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FcGoogle } from 'react-icons/fc'; // Google icon for the button
+import { FcGoogle } from 'react-icons/fc';
 
 const StaffLogin = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,6 @@ const StaffLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle staff login
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -18,7 +17,15 @@ const StaffLogin = () => {
     try {
       const response = await axios.post('http://localhost:8080/api/staff/staff-login', { email, password });
       if (response.data.success) {
-        localStorage.setItem('staffId', response.data.staffId);
+        const { staffId, token, name } = response.data;
+
+        // Store token, staffId, name, and expiration in localStorage
+        const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour expiration
+        localStorage.setItem('staffId', staffId);
+        localStorage.setItem('token', token);
+        localStorage.setItem('name', name);
+        localStorage.setItem('tokenExpiration', expirationTime);
+
         navigate('/staffpage');
       } else {
         setMessage('Invalid Email or Password');
@@ -31,12 +38,10 @@ const StaffLogin = () => {
     }
   };
 
-  // Handle Google Sign-In (add Google OAuth logic)
   const handleGoogleSignIn = () => {
     console.log('Google Sign-In');
-    // Add your Google OAuth logic here
   };
-
+  
   return (
     <div>
       {/* Header */}

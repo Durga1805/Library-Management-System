@@ -58,22 +58,17 @@ const SearchResults = () => {
   const handleReserve = async (bookId) => {
     // Get userId and userType from localStorage
     const userId = localStorage.getItem('userId');
-    const userType = localStorage.getItem('userType');
-
-    // Ensure user data is available
-    if (!userId || !userType) {
-      setError('User information is missing. Please log in again.');
-      return;
-    }
 
     try {
       setReserveLoading(bookId); // Set loading for the specific book being reserved
       const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
         userId,
-        userType
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
+
+      // No need for response.json(), Axios handles it
+      console.log("response", response.data); // response.data contains the JSON data
 
       if (response.status === 200) {
         setResults((prevResults) =>

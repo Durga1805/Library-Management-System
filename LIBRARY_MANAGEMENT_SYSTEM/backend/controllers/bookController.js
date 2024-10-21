@@ -1,9 +1,9 @@
-// LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\bookController.js
 const Book = require('../models/Book');
 const csv = require('csv-parser');
 const fs = require('fs');
-const Student = require('../models/User'); // Assuming you have a User model for students
-const Staff = require('../models/Staff'); // Import Staff model
+const User = require('../models/User'); // Model for students
+const Staff = require('../models/Staff'); // Model for staff
+const mongoose = require('mongoose');
 
 // Function to upload books from a CSV file
 const uploadBooksCSV = async (req, res) => {
@@ -92,72 +92,102 @@ const updateBookStatus = async (req, res) => {
   }
 };
 
-// Function to reserve a book
+// Function to reserve a book by student or staff
 const reserveBook = async (req, res) => {
-  const { bookId } = req.params;
-  const { userId, userType } = req.body; // Ensure these are passed in request body or session/auth token
+  console.log("reserveBook function called");  // Log function call
 
-  if (!userId || !userType) {
-    return res.status(400).json({ message: 'Missing user ID or user type' });
-  }try {
+  const { bookId } = req.params;
+  const { userId } = req.body; // Fetching userId from request body
+
+  // Log userId and bookId
+  console.log("Request Parameters - bookId:", bookId);
+  console.log("Request Body - userId:", userId);
+
+  try {
+    // Validate if the bookId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      console.log("Invalid book ID format"); // Log if invalid book ID
+      return res.status(400).json({ message: 'Invalid book ID format' });
+    }
+
     const book = await Book.findById(bookId);
     if (!book) {
+      console.log("Book not found");  // Log if book is not found
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    if (book.status === 'Deactive') {
-      return res.status(400).json({ message: 'Book is deactivated and cannot be reserved' });
+    if (book.status === 'Reserved') {
+      console.log("Book already reserved");  // Log if book is already reserved
+      return res.status(400).json({ message: 'Book already reserved' });
     }
 
-    if (book.status === 'Reserved') {
-      return res.status(400).json({ message: 'Book is already reserved' });
+    // Find the user based on the custom `userid` field in the User and Staff collections
+    let user = await User.findOne({ userid: userId }); // Change to 'userid'
+    console.log("User from User collection:", user); // Log user found in User collection
+
+    // If user is not found in the User collection, try Staff collection
+    if (!user) {
+      user = await Staff.findOne({ userid: userId }); // Change to 'userid'
+      console.log("User from Staff collection:", user); // Log user found in Staff collection
     }
+
+    if (!user) {
+      console.log("User not found");  // Log if user is not found
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log("User found:", user);  // Log the entire user object
 
     // Reserve the book
     book.status = 'Reserved';
-
-    // Track who reserved the book
-    if (userType === 'student') {
-      const student = await Student.findById(userId);
-      if (!student) {
-        return res.status(400).json({ message: 'Student not found' });
-      }
-      book.reservedByStudent = userId;
-    } else if (userType === 'staff') {
-      const staff = await Staff.findById(userId);
-      if (!staff) {
-        return res.status(400).json({ message: 'Staff member not found' });
-      }
-      book.reservedByStaff = userId;
-    } else {
-      return res.status(400).json({ message: 'Invalid user type' });
-    }
-  
-    // Add reservation date
-    book.reservationDate = new Date();
-
+    book.reservedBy = user._id; // Track reservation by MongoDB ObjectId (_id)
+    book.reservedAt = new Date();
     await book.save();
-    res.status(200).json({ message: 'Book reserved successfully', book });
+
+    // Add the book to the user's reserved books
+    user.reservedBooks.push({
+      bookId: book._id,
+      reservedAt: new Date(),
+    });
+    await user.save();
+
+    console.log("Book reserved successfully");  // Log success
+    res.status(200).json({ message: 'Book reserved successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error reserving book', error: error.message });
+    console.error('Error reserving the book:', error);  // Log error
+    res.status(500).json({ message: 'Error reserving the book', error: error.message });
   }
 };
 
-// Function to get all reserved books
+// Function to get all reserved books for admin view
 const getReservedBooks = async (req, res) => {
+  console.log("Fetching reserved books..."); // Add this line
   try {
-    const reservedBooks = await Book.find({ status: 'Reserved' })
-      .populate('reservedByStudent')  // Populate student reference if exists
-      .populate('reservedByStaff');   // Populate staff reference if exists
+      const books = await Book.find({ status: 'Reserved' })
+          .populate('reservedBy', 'email role')
+          .exec();
 
-    if (!reservedBooks.length) {
-      return res.status(404).json({ message: 'No reserved books found' });
-    }
+      const reservedBooksDetails = books.map(book => ({
+          _id: book._id,
+          title: book.title,
+          reservedBy: book.reservedBy.email,
+          role: book.reservedBy.role,
+          reservedAt: book.reservedAt,
+      }));
 
-    res.status(200).json(reservedBooks); // Send the list of reserved books
+      res.status(200).json(reservedBooksDetails);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching reserved books', error: error.message });
+      res.status(500).json({ message: 'Error fetching reserved books', error: error.message });
   }
 };
 
-module.exports = { uploadBooksCSV, listBooks, searchBooks, updateBookStatus, reserveBook, getReservedBooks };
+
+
+module.exports = {
+  uploadBooksCSV,
+  listBooks,
+  searchBooks,
+  updateBookStatus,
+  reserveBook,
+  getReservedBooks,
+};

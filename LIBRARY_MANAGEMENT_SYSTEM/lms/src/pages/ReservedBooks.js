@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate for navigation on logout
+import { useNavigate } from 'react-router-dom';
 
 const ReservedBooks = () => {
   const [reservedBooks, setReservedBooks] = useState([]);
@@ -11,10 +11,11 @@ const ReservedBooks = () => {
   const fetchReservedBooks = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/api/books/reserved');
+      const response = await axios.get('http://localhost:8080/api/reserved'); // Ensure this is correct
       setReservedBooks(response.data);
     } catch (error) {
       console.error('Error fetching reserved books:', error);
+      // Handle error or notify user here if necessary
     } finally {
       setLoading(false);
     }
@@ -24,25 +25,6 @@ const ReservedBooks = () => {
   useEffect(() => {
     fetchReservedBooks();
   }, []);
-
-  // Function to reserve a book
-  const reserveBook = async (bookId) => {
-    try {
-      const userId = 'YOUR_USER_ID'; // Replace with actual logic for fetching user ID
-      const userType = 'student'; // Example, replace with actual logic based on user session
-
-      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
-        userId,
-        userType
-      });
-
-      alert('Book reserved successfully');
-      fetchReservedBooks(); // Refresh the reserved books list
-    } catch (error) {
-      alert('Error reserving book');
-      console.error(error);
-    }
-  };
 
   return (
     <div>
@@ -54,8 +36,8 @@ const ReservedBooks = () => {
           {reservedBooks.map((book) => (
             <li key={book._id}>
               <h4>{book.title}</h4>
-              <p>Reserved by: {book.reservedByStudent ? 'Student' : 'Staff'}</p>
-              <button onClick={() => reserveBook(book._id)}>Reserve</button>
+              <p>Reserved by: {book.reservedBy} ({book.role})</p>
+              <p>Reserved at: {new Date(book.reservedAt).toLocaleString()}</p>
             </li>
           ))}
         </ul>
