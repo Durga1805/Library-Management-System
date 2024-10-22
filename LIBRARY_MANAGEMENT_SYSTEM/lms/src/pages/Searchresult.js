@@ -23,7 +23,7 @@ const SearchResults = () => {
     localStorage.removeItem('userType');
     
     // Redirect to login page
-    navigate('/login');
+    navigate('/');
   };
 
   useEffect(() => {

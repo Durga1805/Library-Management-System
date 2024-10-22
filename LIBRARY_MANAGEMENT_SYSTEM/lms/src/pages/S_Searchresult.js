@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/Staff.jpg';
 
+
 const S_Searchresult = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ const S_Searchresult = () => {
     localStorage.removeItem('userType');
     
     // Redirect to login page
-    navigate('/login');
+    navigate('/');
   };
 
   useEffect(() => {
@@ -57,23 +58,22 @@ const S_Searchresult = () => {
 
   const handleReserve = async (bookId) => {
     // Get userId and userType from localStorage
+    
     const userId = localStorage.getItem('userId');
-    const userType = localStorage.getItem('userType');
+    console.log(localStorage)
+   
 
-    // Ensure user data is available
-    if (!userId || !userType) {
-      setError('User information is missing. Please log in again.');
-      return;
-    }
-
+    
     try {
       setReserveLoading(bookId); // Set loading for the specific book being reserved
       const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
         userId,
-        userType
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
+
+       // No need for response.json(), Axios handles it
+       console.log("response", response.data); // response.data contains the JSON data
 
       if (response.status === 200) {
         setResults((prevResults) =>
@@ -84,6 +84,7 @@ const S_Searchresult = () => {
         console.log('Book reserved successfully');
       }
     } catch (error) {
+      console.error('Error reserving the book:', error);
       setError('Error reserving the book. Please try again.');
     } finally {
       setReserveLoading(''); // Clear loading after the request is completed

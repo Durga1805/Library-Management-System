@@ -26,7 +26,8 @@ router.get('/books/search', searchBooks);
 router.post('/books/:bookId/reserve', reserveBook); 
 
 // Admin view of reserved books
-router.get('/reserved', getReservedBooks);  
+router.get('/reserved', getReservedBooks);
+
 
 module.exports = router;
 

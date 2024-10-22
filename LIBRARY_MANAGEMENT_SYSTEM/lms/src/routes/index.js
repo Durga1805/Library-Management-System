@@ -12,8 +12,6 @@ import U_searchbook from '../pages/U_searchbook';
 import A_ManageUser from '../pages/A_ManageUser';
 import A_ManageBooks from '../pages/A_ManageBooks';
 import AddBooks from '../pages/AddBooks';
-import U_periodicals from '../pages/U_periodicals';
-import U_searchperi from '../pages/U_searchperi';
 import Addstaff from '../pages/AddStaff';
 import StaffPage from '../pages/StaffPage';
 import About from '../pages/About';
@@ -89,10 +87,7 @@ const router = createBrowserRouter([
                 path: "userch",
                 element: <U_searchbook />
             },
-            {
-                path: "UPeriodicals",
-                element: <U_periodicals />
-            },
+           
             {
                 path: "manage-books",
                 element: <A_ManageBooks />
@@ -105,10 +100,7 @@ const router = createBrowserRouter([
                 path: "search-results",
                 element: <SearchResults />
             },
-            {
-                path: "U_searchperi",
-                element: <U_searchperi />
-            },
+            
             {
                 path: "listuser",
                 element: <Listuser />

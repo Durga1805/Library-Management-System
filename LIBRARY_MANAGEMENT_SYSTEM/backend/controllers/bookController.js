@@ -109,6 +109,7 @@ const reserveBook = async (req, res) => {
       console.log("Invalid book ID format"); // Log if invalid book ID
       return res.status(400).json({ message: 'Invalid book ID format' });
     }
+    
 
     const book = await Book.findById(bookId);
     if (!book) {
@@ -136,11 +137,11 @@ const reserveBook = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log("User found:", user);  // Log the entire user object
-
-    // Reserve the book
+    // console.log("User found:", user);  // Log the entire user object
+    console.log("username",user.name)
+    // Reserve the book and store the user's name instead of ObjectId
     book.status = 'Reserved';
-    book.reservedBy = user._id; // Track reservation by MongoDB ObjectId (_id)
+    book.reservedBy = user.name; // Store user's name instead of ObjectId
     book.reservedAt = new Date();
     await book.save();
 
@@ -159,18 +160,21 @@ const reserveBook = async (req, res) => {
   }
 };
 
+
 // Function to get all reserved books for admin view
 const getReservedBooks = async (req, res) => {
-  console.log("Fetching reserved books..."); // Add this line
+  console.log("Fetching reserved books...");
   try {
       const books = await Book.find({ status: 'Reserved' })
-          .populate('reservedBy', 'email role')
+          .populate('reservedBy', 'email role userId') // Include userId from reservedBy
           .exec();
 
       const reservedBooksDetails = books.map(book => ({
           _id: book._id,
           title: book.title,
+          accessionNumber: book.accessionNumber, // Include accessionNumber
           reservedBy: book.reservedBy.email,
+          userId: book.reservedBy.userId, // Include userId
           role: book.reservedBy.role,
           reservedAt: book.reservedAt,
       }));
@@ -180,7 +184,6 @@ const getReservedBooks = async (req, res) => {
       res.status(500).json({ message: 'Error fetching reserved books', error: error.message });
   }
 };
-
 
 
 module.exports = {

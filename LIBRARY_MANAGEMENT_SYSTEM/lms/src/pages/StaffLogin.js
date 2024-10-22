@@ -13,15 +13,19 @@ const StaffLogin = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
-
+     if(email==="admin@gmail.com" && password==="admin")
+     {
+      navigate('/Adminpage');
+     }
     try {
-      const response = await axios.post('http://localhost:8080/api/staff/staff-login', { email, password });
+      const response = await axios.post('http://localhost:8080/api/staff-login', { email, password });
       if (response.data.success) {
-        const { staffId, token, name } = response.data;
+        console.log("response=",response.data)
+        const { userId, token, name } = response.data;
 
         // Store token, staffId, name, and expiration in localStorage
         const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour expiration
-        localStorage.setItem('staffId', staffId);
+        localStorage.setItem('userId', userId);
         localStorage.setItem('token', token);
         localStorage.setItem('name', name);
         localStorage.setItem('tokenExpiration', expirationTime);

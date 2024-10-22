@@ -91,7 +91,7 @@ const loginStaff = async (req, res) => {
     // Generate token with expiration time (e.g., 1 hour)
     const token = jwt.sign({ staffId: staff._id, name: staff.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.status(200).json({ success: true, staffId: staff._id, token, name: staff.name });
+    res.status(200).json({ success: true,  userId: staff.userid, token, name: staff.name });
   } catch (error) {
     console.error('Error logging in staff:', error);
     res.status(500).json({ message: 'Server error while logging in' });

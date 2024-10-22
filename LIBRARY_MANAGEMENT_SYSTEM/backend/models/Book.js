@@ -1,5 +1,3 @@
-// LIBRARY_MANAGEMENT_SYSTEM\backend\models\Book.js
-
 const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
@@ -15,7 +13,8 @@ const bookSchema = new mongoose.Schema({
   dept: { type: String, required: true },
   cover_type: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], default: 'Active' },
-  reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to the user or staff
+  reservedBy: { type: String }, // Store user's name directly as a string
   reservedAt: { type: Date }
 });
+
 module.exports = mongoose.model('Book', bookSchema);
