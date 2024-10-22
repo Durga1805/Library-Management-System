@@ -10,7 +10,7 @@ const AddUsers = () => {
   // Handle logout logic
   const handleLogout = () => {
     // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    navigate('/');
   };
 
   const handleAddUsers = async (event) => {

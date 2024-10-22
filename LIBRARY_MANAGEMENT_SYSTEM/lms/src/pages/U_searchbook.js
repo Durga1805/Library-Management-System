@@ -24,7 +24,7 @@ const U_searchbook = () => {
   };
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FcGoogle } from 'react-icons/fc';
@@ -10,20 +10,35 @@ const StaffLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Use useEffect to prevent back navigation
+  useEffect(() => {
+    const preventBack = () => {
+      window.history.forward();
+    };
+    
+    // Trigger preventBack on page load
+    setTimeout(preventBack, 0);
+
+    // Ensure this logic runs only when the component is mounted
+    window.onunload = function () {
+      return null;
+    };
+  }, []); // Empty dependency array ensures this runs only once
+
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
-     if(email==="admin@gmail.com" && password==="admin")
-     {
+
+    if (email === "admin@gmail.com" && password === "admin") {
       navigate('/Adminpage');
-     }
+    }
+
     try {
       const response = await axios.post('http://localhost:8080/api/staff-login', { email, password });
       if (response.data.success) {
-        console.log("response=",response.data)
         const { userId, token, name } = response.data;
 
-        // Store token, staffId, name, and expiration in localStorage
+        // Store user data in localStorage
         const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour expiration
         localStorage.setItem('userId', userId);
         localStorage.setItem('token', token);

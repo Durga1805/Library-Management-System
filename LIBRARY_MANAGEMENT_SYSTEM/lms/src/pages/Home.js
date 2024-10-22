@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';  // Import React hooks
+import { useNavigate } from 'react-router-dom';      // Import useNavigate
 
 const Home = () => {
   const navigate = useNavigate(); 
@@ -8,6 +8,23 @@ const Home = () => {
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown); // Toggle dropdown visibility
   };
+
+  useEffect(() => {
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    preventBack();
+    window.onunload = function () { return null; };
+
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave this page?";
+    };
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
 
   const handleOptionClick = (role) => {
     if (role === 'staff') {
@@ -27,13 +44,12 @@ const Home = () => {
         backgroundPosition: 'center' 
       }}
     >
-      {/* Header Section */}
       <header className="w-full p-4 bg-gradient-to-r from-blue-500 to-red-500 text-white flex items-center justify-between">
         <h1 className="text-2xl font-bold">LMS</h1>
         <div className="relative">
           <button 
             className="bg-white text-blue-500 px-4 py-2 rounded" 
-            onClick={toggleDropdown} // Toggle dropdown on click
+            onClick={toggleDropdown}
           >
             Login
           </button>
@@ -41,13 +57,13 @@ const Home = () => {
             <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
               <button 
                 className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
-                onClick={() => handleOptionClick('staff')} // Staff login
+                onClick={() => handleOptionClick('staff')}
               >
                 Staff Login
               </button>
               <button 
                 className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
-                onClick={() => handleOptionClick('student')} // Student login
+                onClick={() => handleOptionClick('student')}
               >
                 Student Login
               </button>
@@ -56,7 +72,6 @@ const Home = () => {
         </div>
       </header>
 
-      {/* Main Content Section */}
       <div className="flex-grow flex items-center justify-center">
         <h1 className="text-3xl font-bold text-center">
           Welcome to Library Management System..

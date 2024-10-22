@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate, usePrompt } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
 const A_ManageBooks = () => {
@@ -7,9 +7,29 @@ const A_ManageBooks = () => {
 
   // Handle logout logic
   const handleLogout = () => {
-    // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    // Clear authentication tokens or any related data
+    navigate('/');
   };
+
+  // Use Prompt to block navigation
+  const isBlocking = true; // Set this based on a condition (e.g., form unsaved, session active)
+
+  useEffect(() => {
+    // Prevent history back navigation
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    preventBack();
+
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave this page?";
+    };
+
+    return () => {
+      window.onbeforeunload = null; // Clean up on component unmount
+    };
+  }, []);
 
   return (
     <div>

@@ -12,7 +12,7 @@ const A_SearchUsers = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   const handleSearch = async (event) => {

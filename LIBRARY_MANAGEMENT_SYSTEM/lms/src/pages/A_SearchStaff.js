@@ -51,7 +51,7 @@ const A_SearchStaff = () => {
           </div>
           <nav className="flex space-x-4">
             <Link to="/Adminpage" className="text-white hover:text-gray-200">Back</Link>
-            <Link to="/login" className="text-white hover:text-gray-200">Logout</Link>
+            <Link to="/" className="text-white hover:text-gray-200">Logout</Link>
           </nav>
         </div>
       </header>

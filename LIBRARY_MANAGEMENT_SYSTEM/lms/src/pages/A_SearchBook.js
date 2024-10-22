@@ -12,7 +12,7 @@ const A_SearchBook = () => {
 
   const handleLogout = () => {
     // Clear authentication tokens and redirect to login
-    navigate('/login');
+    navigate('/');
   };
 
   const handleSearch = async (event) => {

@@ -5,10 +5,19 @@ import backgroundImage from '../assets/lms2.jpg';
 const A_ManageStaffs = () => {
   const navigate = useNavigate();
 
+  
+<script type="text/javascript">
+  function preventBack() {
+      window.history.forward()
+  }
+  setTimeout("preventBack()", 0);
+  window.onunload = function () { null };
+</script>
+
   // Handle logout logic here
   const handleLogout = () => {
     // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    navigate('/');
   };
 
   return (

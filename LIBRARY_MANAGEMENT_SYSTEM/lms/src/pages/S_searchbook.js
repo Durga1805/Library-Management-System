@@ -1,30 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const S_searchbook = () => {
   const [searchType, setSearchType] = useState('title');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('userch');
-  const [errorMessage, setErrorMessage] = useState(''); // New state for error message
+  const [errorMessage, setErrorMessage] = useState(''); // State for error message
   const navigate = useNavigate();
 
+  // Prevent back navigation
+  useEffect(() => {
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    setTimeout(preventBack, 0);
+
+    // Prevent back navigation on unload
+    window.onunload = function () {
+      return null;
+    };
+  }, []);
+
+  // Handle the search process
   const handleSearch = () => {
     if (searchQuery.trim()) {
+      // Navigate to search results if valid input
       navigate(`/search-books?type=${searchType}&query=${searchQuery}`);
     } else {
-      // Set error message if search query is empty
+      // Show error message for empty input
       const searchTypeLabel = searchType.charAt(0).toUpperCase() + searchType.slice(1);
       setErrorMessage(`Please enter a valid ${searchTypeLabel}.`);
     }
   };
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    navigate(`/${tab}`);
-  };
-
+  // Handle logout by clearing local storage and redirecting to login
   const handleLogout = () => {
-    navigate('/login');
+    localStorage.removeItem('token');  // Clear token from localStorage
+    localStorage.removeItem('userId');  // Clear userId from localStorage
+    navigate('/');  // Redirect to login page
   };
 
   return (
@@ -44,20 +57,16 @@ const S_searchbook = () => {
       <div
         className="flex-grow flex flex-col items-center justify-center bg-cover bg-center"
         style={{
-            backgroundImage:  `url(${require('../assets/Staff.jpg')})`,
+          backgroundImage: `url(${require('../assets/Staff.jpg')})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-
-        {/* Combined Book Collection and Search Section */}
+        {/* Book Collection and Search Section */}
         <div className="bg-black bg-opacity-50 p-6 rounded-lg text-white text-center mb-6">
           <h2 className="text-4xl font-bold mb-2">Book Collection</h2>
           <p className="text-lg">Search or browse through the library’s books here.</p>
         </div>
-
-        {/* Tabs for Books and Periodicals */}
-        
 
         {/* Search Section */}
         <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-xl mx-auto flex flex-col space-y-4 mb-4">

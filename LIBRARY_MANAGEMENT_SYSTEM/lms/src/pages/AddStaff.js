@@ -118,7 +118,7 @@ function AddStaff() {
   };
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   const handleBack = () => {

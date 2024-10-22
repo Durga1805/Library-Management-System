@@ -7,6 +7,7 @@ const {
     searchBooks,
     reserveBook,
     getReservedBooks,
+    updateBookStatus,
 } = require('../controllers/bookController');
 
 const router = express.Router();
@@ -28,6 +29,8 @@ router.post('/books/:bookId/reserve', reserveBook);
 // Admin view of reserved books
 router.get('/reserved', getReservedBooks);
 
+// Define the PUT route
+router.put('/books/:id/status', updateBookStatus); 
 
 module.exports = router;
 

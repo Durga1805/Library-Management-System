@@ -1,32 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-
 const StaffPage = () => {
   const navigate = useNavigate(); 
   const [name, setName] = useState('');
 
+  // useEffect Hook for checking login status and token expiration
   useEffect(() => {
-    // Retrieve the name and token from localStorage
+    // Retrieve name and token expiration from localStorage
     const storedName = localStorage.getItem('name');
     const tokenExpiration = localStorage.getItem('tokenExpiration');
     const currentTime = new Date().getTime();
 
+    // Set name if available in localStorage
     if (storedName) {
       setName(storedName);
     }
 
-    // Check if the token has expired
+    // Auto logout if token has expired
     if (!tokenExpiration || currentTime > tokenExpiration) {
-      handleLogout(); // Auto-logout if token is expired
+      handleLogout();
     }
   }, []);
 
+  // Handle Logout Function
   const handleLogout = () => {
+    // Remove user-specific data from localStorage upon logout
     localStorage.removeItem('token');
-    localStorage.removeItem('staffId');
+    localStorage.removeItem('userId');
     localStorage.removeItem('name');
     localStorage.removeItem('tokenExpiration');
+    // Navigate to the homepage (or login page)
     navigate('/');
   };
 
@@ -39,14 +43,15 @@ const StaffPage = () => {
             <h1 className="text-white text-xl font-bold">LMS</h1>
           </div>
           <nav className="flex space-x-4 items-center">
+            {/* Placeholder Profile link */}
             <Link 
-              to=""  // Route for profile (can be changed)
+              to="/profile"  // Profile page route can be modified
               className="text-white hover:text-gray-200"
             >
               Profile
             </Link>
             <button 
-              onClick={handleLogout}  // Use the handleLogout function
+              onClick={handleLogout}  // Handle Logout button
               className="text-white hover:text-gray-200"
             >
               Logout
@@ -59,14 +64,18 @@ const StaffPage = () => {
       <div 
         className="flex items-center justify-center min-h-screen bg-cover bg-center" 
         style={{
-          backgroundImage: `url(${require('../assets/Staff.jpg')})`,
+          backgroundImage: `url(${require('../assets/Staff.jpg')})`, // Background image
         }}
       >
         <div className="bg-white bg-opacity-100 p-10 rounded-lg text-left mt-20">
+          {/* Greeting Section */}
           <h1 className="text-4xl font-bold mb-6 text-black">LMS</h1>
-          {/* Display name or fallback to 'User' */}
+          {/* Display name or 'User' if name is not available */}
           <h2 className="text-2xl mb-8 text-black">Welcome, {name ? name : 'User'}!</h2> 
+
+          {/* Navigation Links */}
           <ul>
+            {/* Search Books Link */}
             <li className="mb-4">
               <Link 
                 to="/ssearch"
@@ -75,25 +84,31 @@ const StaffPage = () => {
                 Search Books
               </Link>
             </li>
+            
+            {/* Issued Books Link */}
             <li className="mb-4">
               <Link 
-                to=""
+                to="/issued-books"  // Issued books route placeholder
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Issued Books
               </Link>
             </li>
+            
+            {/* Feedback Link */}
             <li className="mb-4">
               <Link 
-                to=""
+                to="/feedback"  // Feedback route placeholder
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Feedback
               </Link>
             </li>
+            
+            {/* History Link */}
             <li className="mb-4">
               <Link 
-                to=""
+                to="/history"  // History route placeholder
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 History

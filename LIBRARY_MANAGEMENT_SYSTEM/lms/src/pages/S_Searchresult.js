@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/Staff.jpg';
 
-
 const S_Searchresult = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +14,18 @@ const S_Searchresult = () => {
   const params = new URLSearchParams(location.search);
   const searchType = params.get('type');
   const searchQuery = params.get('query');
+
+  // Prevent back navigation
+  useEffect(() => {
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    setTimeout(preventBack, 0);
+    window.onunload = function () {
+      return null;
+    };
+  }, []);
 
   // Function to handle logout
   const handleLogout = () => {
@@ -39,7 +50,16 @@ const S_Searchresult = () => {
         if (response.data.length === 0) {
           setError('No results found for your query.');
         } else {
-          setResults(response.data);
+          // Filter out Reserved books and only show Active and Deactive books
+          const filteredResults = response.data.filter(book =>
+            book.status === 'Active' || book.status === 'Deactive'
+          );
+          setResults(filteredResults);
+
+          // If no active or deactive books are found
+          if (filteredResults.length === 0) {
+            setError('No active or deactive books found.');
+          }
         }
       } catch (error) {
         setError('Error fetching search results. Please try again later.');
@@ -57,13 +77,8 @@ const S_Searchresult = () => {
   }, [searchType, searchQuery]);
 
   const handleReserve = async (bookId) => {
-    // Get userId and userType from localStorage
-    
     const userId = localStorage.getItem('userId');
-    console.log(localStorage)
-   
 
-    
     try {
       setReserveLoading(bookId); // Set loading for the specific book being reserved
       const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
@@ -71,9 +86,6 @@ const S_Searchresult = () => {
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-
-       // No need for response.json(), Axios handles it
-       console.log("response", response.data); // response.data contains the JSON data
 
       if (response.status === 200) {
         setResults((prevResults) =>
@@ -119,7 +131,7 @@ const S_Searchresult = () => {
                   <th className="py-3 px-6 text-left">Title</th>
                   <th className="py-3 px-6 text-left">Author</th>
                   <th className="py-3 px-6 text-left">Status</th>
-                  <th className="py-3 px-6 text-center">Reserve</th>
+                  <th className="py-3 px-6 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,7 +144,7 @@ const S_Searchresult = () => {
                     <td className="py-3 px-6 text-center">
                       {book.status === 'Deactive' ? (
                         <span className="text-gray-500">Unavailable</span>
-                      ) : book.status !== 'Reserved' ? (
+                      ) : (
                         <button 
                           onClick={() => handleReserve(book._id)} 
                           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
@@ -140,8 +152,6 @@ const S_Searchresult = () => {
                         >
                           {reserveLoading === book._id ? 'Reserving...' : 'Reserve'}
                         </button>
-                      ) : (
-                        <span className="text-red-500">Reserved</span>
                       )}
                     </td>
                   </tr>

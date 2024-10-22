@@ -1,6 +1,5 @@
 // // D:\LibraryManagement\LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\userController.js
 const csv = require('csv-parser');
-const fs = require('fs');
 const Student = require('../models/User');
 const moment = require('moment');
 const bcrypt = require('bcrypt');
@@ -11,23 +10,28 @@ require('dotenv').config();
 const uploadCSV = async (req, res) => {
   const results = [];
   const file = req.file;
-  console.log('Admin Login Attempt:', { email, password });
 
   if (!file) {
     return res.status(400).json({ message: 'No file uploaded.' });
   }
 
   try {
-    // Read CSV file
-    fs.createReadStream(file.path)
+    // Parse CSV from buffer
+    const stream = require('stream');
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(file.buffer);
+
+    bufferStream
       .pipe(csv())
       .on('data', (data) => {
         results.push(data);
       })
       .on('end', async () => {
+        // Iterate over the parsed CSV data and save each user
         for (let row of results) {
           const dob = moment(row.dob, 'YYYY-MM-DD').toDate(); // Parse dob
 
+          // Check if the parsed date is valid
           if (!moment(dob).isValid()) {
             console.error(`Invalid date format for user ${row.name}: ${row.dob}`);
             return res.status(400).json({ message: `Invalid date format for user ${row.name}: ${row.dob}` });
@@ -41,8 +45,8 @@ const uploadCSV = async (req, res) => {
             phoneno: row.phoneno,
             email: row.email,
             dept: row.dept || 'DefaultDept',
-            status: row.status || 'Active',
-            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Hash password
+            status: row.status || 'Active', // Default status if not provided
+            password: await bcrypt.hash(row.password || 'DefaultPassword123', 10), // Default password if not provided
           });
 
           try {
@@ -59,6 +63,8 @@ const uploadCSV = async (req, res) => {
     res.status(500).json({ message: 'Error processing CSV file', error: error.message });
   }
 };
+
+
 
 // Function to handle admin and user login
 const login = async (req, res) => {

@@ -9,6 +9,15 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+<script type="text/javascript">
+  function preventBack() {
+      window.history.forward()
+  }
+  setTimeout("preventBack()", 0);
+  window.onunload = function () { null };
+</script>
+
 
   // Function for email-password based login (for user login only)
   const handleLogin = async (event) => {

@@ -5,8 +5,16 @@ import backgroundImage from '../assets/lms2.jpg';
 const AdminPage = () => {
   const navigate = useNavigate();
 
+<script type="text/javascript">
+  function preventBack() {
+      window.history.forward()
+  }
+  setTimeout("preventBack()", 0);
+  window.onunload = function () { null };
+</script>
+
   const handleLogout = () => {
-    navigate('/login'); // Redirects to the login page
+    navigate('/'); // Redirects to the login page
   };
 
   return (

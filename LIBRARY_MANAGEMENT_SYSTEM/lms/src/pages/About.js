@@ -5,7 +5,7 @@ function About() {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/login'); // Navigates to the login page
+    navigate('/'); // Navigates to the login page
   };
 
   return (

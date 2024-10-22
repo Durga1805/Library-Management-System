@@ -36,7 +36,7 @@ function ListBooks() {
   }
 
   const handleLogout = () => {
-    navigate('/login'); // Redirects to the login page
+    navigate('/'); // Redirects to the login page
   };
 
   return (

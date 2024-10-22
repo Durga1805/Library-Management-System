@@ -9,7 +9,7 @@ const AddBooks = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   const handleFileUpload = (event) => {

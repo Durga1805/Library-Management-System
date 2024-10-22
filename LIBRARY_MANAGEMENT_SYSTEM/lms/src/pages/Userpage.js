@@ -1,15 +1,33 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import userImage from '../assets/user.jpg'; // Import the background image
 
 const UserPage = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId') || 'User'; // Get userId from local storage
   const profilePic = localStorage.getItem('profilePic'); // Get profile picture from local storage
 
+  // Prevent back navigation
+  useEffect(() => {
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    preventBack();
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave this page?";
+    };
+
+    // Clean up on component unmount
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('userId'); // Clear userId from local storage
     localStorage.removeItem('profilePic'); // Optional: Clear profilePic if desired
-    navigate('/login'); // Redirect to the login page after logging out
+    navigate('/'); // Redirect to the login page after logging out
   };
 
   return (
@@ -53,7 +71,7 @@ const UserPage = () => {
       <div 
         className="flex items-center justify-center min-h-screen bg-cover bg-center" 
         style={{
-          backgroundImage: `url(${require('../assets/user.jpg')})`, 
+          backgroundImage: `url(${userImage})`, // Use imported image
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -71,7 +89,7 @@ const UserPage = () => {
             </li>
             <li className="mb-4">
               <Link 
-                to="/issued-books" // Assume you will implement this route
+                to="/issued-books" // Route for issued books
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Issued Books
@@ -79,7 +97,7 @@ const UserPage = () => {
             </li>
             <li className="mb-4">
               <Link 
-                to="/feedback" // Assume you will implement this route
+                to="/feedback" // Route for feedback
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 Feedback
@@ -87,7 +105,7 @@ const UserPage = () => {
             </li>
             <li className="mb-4">
               <Link 
-                to="/history" // Assume you will implement this route
+                to="/history" // Route for history
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 History
