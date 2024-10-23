@@ -6,8 +6,10 @@ const {
     listBooks,
     searchBooks,
     reserveBook,
-    getReservedBooks,
+    cancelReservation,
     updateBookStatus,
+    issueBook,
+    handleReturnBook,
 } = require('../controllers/bookController');
 
 const router = express.Router();
@@ -26,11 +28,20 @@ router.get('/books/search', searchBooks);
 // Reserve a book
 router.post('/books/:bookId/reserve', reserveBook); 
 
-// Admin view of reserved books
-router.get('/reserved', getReservedBooks);
+
+// Cancel a reservation and change the book status to 'Active'
+router.post('/books/:bookId/cancel', cancelReservation);
 
 // Define the PUT route
 router.put('/books/:id/status', updateBookStatus); 
+
+router.patch('/books/issue/:id', issueBook);
+
+
+// Route to return a book
+router.patch('/books/return/:id', handleReturnBook);
+
+
 
 module.exports = router;
 

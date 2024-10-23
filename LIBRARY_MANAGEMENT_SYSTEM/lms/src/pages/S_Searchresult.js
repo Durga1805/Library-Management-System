@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/Staff.jpg';
 
@@ -8,7 +8,8 @@ const S_Searchresult = () => {
   const [loading, setLoading] = useState(true);
   const [reserveLoading, setReserveLoading] = useState(''); // To track loading per book
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // To navigate after logout
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' }); // For sorting
+  const navigate = useNavigate();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -29,15 +30,13 @@ const S_Searchresult = () => {
 
   // Function to handle logout
   const handleLogout = () => {
-    // Remove the token and user data from localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('userType');
-    
-    // Redirect to login page
     navigate('/');
   };
 
+  // Fetch search results based on query
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
@@ -50,13 +49,11 @@ const S_Searchresult = () => {
         if (response.data.length === 0) {
           setError('No results found for your query.');
         } else {
-          // Filter out Reserved books and only show Active and Deactive books
-          const filteredResults = response.data.filter(book =>
-            book.status === 'Active' || book.status === 'Deactive'
+          const filteredResults = response.data.filter(
+            (book) => book.status === 'Active' || book.status === 'Deactive'
           );
           setResults(filteredResults);
 
-          // If no active or deactive books are found
           if (filteredResults.length === 0) {
             setError('No active or deactive books found.');
           }
@@ -76,16 +73,17 @@ const S_Searchresult = () => {
     }
   }, [searchType, searchQuery]);
 
+  // Function to handle reserving a book
   const handleReserve = async (bookId) => {
     const userId = localStorage.getItem('userId');
 
     try {
-      setReserveLoading(bookId); // Set loading for the specific book being reserved
-      const response = await axios.post(`http://localhost:8080/api/books/${bookId}/reserve`, {
-        userId,
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
+      setReserveLoading(bookId);
+      const response = await axios.post(
+        `http://localhost:8080/api/books/${bookId}/reserve`,
+        { userId },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
 
       if (response.status === 200) {
         setResults((prevResults) =>
@@ -99,9 +97,57 @@ const S_Searchresult = () => {
       console.error('Error reserving the book:', error);
       setError('Error reserving the book. Please try again.');
     } finally {
-      setReserveLoading(''); // Clear loading after the request is completed
+      setReserveLoading('');
     }
   };
+
+  // Function to handle canceling a reservation
+  const handleCancel = async (bookId) => {
+    const userId = localStorage.getItem('userId');
+
+    try {
+      setReserveLoading(bookId);
+      const response = await axios.post(
+        `http://localhost:8080/api/books/${bookId}/cancel`,
+        { userId },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+
+      if (response.status === 200) {
+        setResults((prevResults) =>
+          prevResults.map((book) =>
+            book._id === bookId ? { ...book, status: 'Active' } : book
+          )
+        );
+        console.log('Reservation canceled successfully');
+      }
+    } catch (error) {
+      console.error('Error canceling the reservation:', error);
+      setError('Error canceling the reservation. Please try again.');
+    } finally {
+      setReserveLoading('');
+    }
+  };
+
+  // Sorting logic
+  const sortResults = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedResults = [...results].sort((a, b) => {
+    if (sortConfig.key) {
+      const valueA = a[sortConfig.key].toLowerCase();
+      const valueB = b[sortConfig.key].toLowerCase();
+      if (valueA < valueB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valueA > valueB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    }
+    return 0;
+  });
 
   if (loading) return <div className="text-white text-center text-2xl mt-6">Loading...</div>;
   if (error) return <div className="text-red-500 text-center text-2xl mt-6">{error}</div>;
@@ -128,14 +174,18 @@ const S_Searchresult = () => {
               <thead className="bg-gray-200">
                 <tr>
                   <th className="py-3 px-6 text-left">Acc No</th>
-                  <th className="py-3 px-6 text-left">Title</th>
-                  <th className="py-3 px-6 text-left">Author</th>
+                  <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('title')}>
+                    Title {sortConfig.key === 'title' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('author')}>
+                    Author {sortConfig.key === 'author' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                  </th>
                   <th className="py-3 px-6 text-left">Status</th>
                   <th className="py-3 px-6 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {results.map((book) => (
+                {sortedResults.map((book) => (
                   <tr key={book._id} className="hover:bg-gray-100">
                     <td className="py-3 px-6">{book.accno}</td>
                     <td className="py-3 px-6">{book.title}</td>
@@ -144,6 +194,16 @@ const S_Searchresult = () => {
                     <td className="py-3 px-6 text-center">
                       {book.status === 'Deactive' ? (
                         <span className="text-gray-500">Unavailable</span>
+                      ) : book.status === 'Reserved' ? (
+                        <button 
+                          onClick={() => handleCancel(book._id)} 
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" 
+                          disabled={reserveLoading === book._id}
+                        >
+                          {reserveLoading === book._id ? 'Canceling...' : 'Cancel'}
+                        </button>
+                      ) : book.status === 'Issued' ? (
+                        <span className="text-gray-500">Issued</span>
                       ) : (
                         <button 
                           onClick={() => handleReserve(book._id)} 

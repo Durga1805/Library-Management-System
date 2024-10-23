@@ -29,6 +29,8 @@ import S_Searchresult from '../pages/S_Searchresult';
 import StaffLogin from '../pages/StaffLogin';
 import ReservedBooks from '../pages/ReservedBooks';
 import FeedbackForm from '../pages/FeedbackForm';
+import Issuebooks from '../pages/Issuebooks';
+import U_issedbooks from '../pages/U_issedbooks';
 
 const router = createBrowserRouter([
     {
@@ -149,9 +151,19 @@ const router = createBrowserRouter([
                 path: "feedback",
                 element: <FeedbackForm />
             },
+            {
+                path: "issued",
+                element: <Issuebooks />
+            },
+            {
+                path: "issued-books",
+                element: <U_issedbooks />
+            },
         ]
     }
 ]);
+
+
 
 export default router;
 

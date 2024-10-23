@@ -1,9 +1,8 @@
-// LIBRARY_MANAGEMENT_SYSTEM\backend\controllers\bookController.js
 const Book = require('../models/Book');
+const User = require('../models/User');
+const Staff = require('../models/Staff');
 const csv = require('csv-parser');
 const fs = require('fs');
-const User = require('../models/User'); // Model for students
-const Staff = require('../models/Staff'); // Model for staff
 const mongoose = require('mongoose');
 
 // Function to upload books from a CSV file
@@ -12,11 +11,10 @@ const uploadBooksCSV = async (req, res) => {
   fs.createReadStream(req.file.path)
     .pipe(csv())
     .on('data', (data) => {
-      // Validate CSV data to ensure required fields exist
       if (data.accno && data.title && data.author && data.status) {
         results.push({
           accno: data.accno,
-          call_no: data.call_no || '', // default to empty if call_no is not provided
+          call_no: data.call_no || '',
           title: data.title,
           year_of_publication: Number(data.year_of_publication) || null,
           author: data.author,
@@ -31,9 +29,7 @@ const uploadBooksCSV = async (req, res) => {
       }
     })
     .on('end', async () => {
-      // Delete the uploaded CSV file after processing
       fs.unlinkSync(req.file.path);
-
       try {
         if (results.length > 0) {
           await Book.insertMany(results);
@@ -93,98 +89,130 @@ const updateBookStatus = async (req, res) => {
   }
 };
 
-// Function to reserve a book by student or staff
+// Function to reserve a book
 const reserveBook = async (req, res) => {
-  console.log("reserveBook function called");  // Log function call
-
   const { bookId } = req.params;
-  const { userId } = req.body; // Fetching userId from request body
-
-  // Log userId and bookId
-  console.log("Request Parameters - bookId:", bookId);
-  console.log("Request Body - userId:", userId);
+  const { userId } = req.body;
 
   try {
-    // Validate if the bookId is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(bookId)) {
-      console.log("Invalid book ID format"); // Log if invalid book ID
-      return res.status(400).json({ message: 'Invalid book ID format' });
-    }
-    
-
     const book = await Book.findById(bookId);
     if (!book) {
-      console.log("Book not found");  // Log if book is not found
       return res.status(404).json({ message: 'Book not found' });
     }
 
     if (book.status === 'Reserved') {
-      console.log("Book already reserved");  // Log if book is already reserved
       return res.status(400).json({ message: 'Book already reserved' });
     }
 
-    // Find the user based on the custom `userid` field in the User and Staff collections
-    let user = await User.findOne({ userid: userId }); // Change to 'userid'
-    console.log("User from User collection:", user); // Log user found in User collection
-
-    // If user is not found in the User collection, try Staff collection
+    let user = await User.findOne({ userid: userId });
     if (!user) {
-      user = await Staff.findOne({ userid: userId }); // Change to 'userid'
-      console.log("User from Staff collection:", user); // Log user found in Staff collection
+      user = await Staff.findOne({ userid: userId });
     }
 
     if (!user) {
-      console.log("User not found");  // Log if user is not found
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // console.log("User found:", user);  // Log the entire user object
-    console.log("username",user.name)
-    // Reserve the book and store the user's name instead of ObjectId
     book.status = 'Reserved';
-    book.reservedBy = user.name; // Store user's name instead of ObjectId
+    book.reservedBy = user.name;
     book.reservedAt = new Date();
     await book.save();
-    // Add the book to the user's reserved books
-    user.reservedBooks.push({
-      bookId: book._id,
-      reservedAt: new Date(),
-    });
+
+    user.reservedBooks.push({ bookId: book._id, reservedAt: new Date() });
     await user.save();
 
-    console.log("Book reserved successfully");  // Log success
     res.status(200).json({ message: 'Book reserved successfully' });
   } catch (error) {
-    console.error('Error reserving the book:', error);  // Log error
     res.status(500).json({ message: 'Error reserving the book', error: error.message });
   }
 };
 
+// Function to cancel reservation
+const cancelReservation = async (req, res) => {
+  const { bookId } = req.params;
 
-// Function to get all reserved books for admin view
-const getReservedBooks = async (req, res) => {
-  console.log("Fetching reserved books...");
   try {
-      const books = await Book.find({ status: 'Reserved' })
-          .populate('reservedBy', 'email role userId') // Include userId from reservedBy
-          .exec();
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
 
-      const reservedBooksDetails = books.map(book => ({
-          _id: book._id,
-          title: book.title,
-          accessionNumber: book.accessionNumber, // Include accessionNumber
-          reservedBy: book.reservedBy.email,
-          userId: book.reservedBy.userId, // Include userId
-          role: book.reservedBy.role,
-          reservedAt: book.reservedAt,
-      }));
+    if (book.status !== 'Reserved') {
+      return res.status(400).json({ message: 'Book is not currently reserved' });
+    }
 
-      res.status(200).json(reservedBooksDetails);
+    book.status = 'Active';
+    book.reservedBy = null;
+    book.reservedAt = null;
+    await book.save();
+
+    res.status(200).json({ message: 'Reservation canceled and book is now active.' });
   } catch (error) {
-      res.status(500).json({ message: 'Error fetching reserved books', error: error.message });
+    res.status(500).json({ message: 'Error canceling the reservation', error: error.message });
   }
 };
 
+// Issue a book and calculate due date
+const issueBook = async (req, res) => {
+  const { id } = req.params;
+
+  const currentDate = new Date();
+  const dueDate = new Date(currentDate);
+  dueDate.setDate(currentDate.getDate() + 15);
+
+  try {
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      {
+        status: 'Issued',
+        issuedAt: new Date(),
+        dueDate: dueDate,
+        fine: 0
+      },
+      { new: true }
+    );
+
+    if (!updatedBook) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+
+    res.status(200).json({ message: 'Book issued successfully.', book: updatedBook });
+  } catch (error) {
+    res.status(500).json({ message: 'Error issuing book', error: error.message });
+  }
+};
+
+// Return a book and calculate fine if overdue
+const handleReturnBook = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const book = await Book.findById(id);
+
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+
+    const currentDate = new Date();
+    const dueDate = new Date(book.dueDate);
+    let fine = 0;
+
+    if (currentDate > dueDate) {
+      const daysLate = Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24));
+      fine = daysLate * 2;  // Rs. 2 fine per day
+    }
+
+    book.status = 'Active';
+    book.issuedAt = null;
+    book.dueDate = null;
+    book.fine = fine;
+    await book.save();
+
+    res.status(200).json({ message: 'Book returned successfully.', fine });
+  } catch (error) {
+    res.status(500).json({ message: 'Error returning book', error: error.message });
+  }
+};
 
 module.exports = {
   uploadBooksCSV,
@@ -192,5 +220,7 @@ module.exports = {
   searchBooks,
   updateBookStatus,
   reserveBook,
-  getReservedBooks,
+  cancelReservation,
+  issueBook,
+  handleReturnBook
 };

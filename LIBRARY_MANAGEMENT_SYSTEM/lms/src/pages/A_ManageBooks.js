@@ -62,26 +62,32 @@ const A_ManageBooks = () => {
               to="/add-books"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              ADD
+              Adding Books
             </Link>
             
             <Link 
               to="/A_search"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              SEARCH
+              Search Books
             </Link>
             <Link 
               to="/listbook"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              LIST
+              Books
             </Link>
             <Link 
               to="/reserved"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              Reserved Books
+              Reserved Books 
+            </Link>
+            <Link 
+              to="/issued"
+              className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+               Issue Books
             </Link>
           </div>
         </div>

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
-const ReservedBooks = () => {
+function Issuebooks() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,14 +24,17 @@ const ReservedBooks = () => {
     fetchBooks();
   }, []);
 
-  const handleIssueBook = async (bookId) => {
+  // Handle book return
+  const handleReturnBook = async (bookId) => {
     try {
-      await axios.patch(`http://localhost:8080/api/books/issue/${bookId}`, { status: 'Issued' });
-      const response = await axios.get('http://localhost:8080/api/books');
-      setBooks(response.data || []);
-      alert('Book issued successfully');
+      const response = await axios.patch(`http://localhost:8080/api/books/return/${bookId}`);
+      const updatedBooks = books.map((book) => 
+        book._id === bookId ? { ...book, status: 'Active', fine: response.data.book.fine } : book
+      );
+      setBooks(updatedBooks);
+      alert(`Book returned successfully. Fine: Rs. ${response.data.book.fine}`);
     } catch (error) {
-      alert('Error issuing book');
+      alert('Error returning book');
     }
   };
 
@@ -67,8 +70,8 @@ const ReservedBooks = () => {
     return <div>{error}</div>;
   }
 
-  // Filter books to only show the ones with status 'Reserved'
-  const reservedBooks = books.filter((book) => book.status === 'Reserved');
+  // Filter books to only show the ones with status 'Issued'
+  const issuedBooks = books.filter((book) => book.status === 'Issued');
 
   return (
     <div
@@ -94,8 +97,8 @@ const ReservedBooks = () => {
 
       {/* Main Content */}
       <div className="container mx-auto pt-20">
-        <h1 className="text-3xl font-bold mb-6 text-center">Reserved Books</h1>
-        {reservedBooks && reservedBooks.length > 0 ? (
+        <h1 className="text-3xl font-bold mb-6 text-center">Issued Books</h1>
+        {issuedBooks && issuedBooks.length > 0 ? (
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -104,18 +107,20 @@ const ReservedBooks = () => {
                 <th className="px-4 py-2">Author</th>
                 <th className="px-4 py-2">Reserved By</th>
                 <th className="px-4 py-2">Reserved At</th>
+                <th className="px-4 py-2">Issued At</th>
+                <th className="px-4 py-2">Due Date</th> {/* New Due Date Column */}
                 <th className="px-4 py-2">Action</th>
               </tr>
             </thead>
             <tbody>
-              {reservedBooks.map((book) => (
+              {issuedBooks.map((book) => (
                 <tr key={book._id} className="text-gray-700">
                   <td className="border px-4 py-2">{book.accno}</td>
                   <td className="border px-4 py-2">{book.title}</td>
                   <td className="border px-4 py-2">{book.author}</td>
                   <td className="border px-4 py-2">{book.reservedBy || 'N/A'}</td>
                   <td className="border px-4 py-2">
-                    {book.reservedAt ? new Date(book.reservedAt).toLocaleString('en-US', {
+                    {book.reservedAt ? new Date(book.reservedAt).toLocaleDateString('en-US', {
                       year: 'numeric', 
                       month: '2-digit', 
                       day: '2-digit', 
@@ -125,11 +130,28 @@ const ReservedBooks = () => {
                     }) : 'N/A'}
                   </td>
                   <td className="border px-4 py-2">
+                    {book.issuedAt ? new Date(book.issuedAt).toLocaleString('en-US', {
+                      year: 'numeric', 
+                      month: '2-digit', 
+                      day: '2-digit', 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      hour12: true, // Use 12-hour format
+                    }) : 'N/A'}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {book.dueDate ? new Date(book.dueDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    }) : 'N/A'}
+                  </td> {/* Displaying the Due Date */}
+                  <td className="border px-4 py-2">
                     <button
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                      onClick={() => handleIssueBook(book._id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                      onClick={() => handleReturnBook(book._id)}
                     >
-                      Issue
+                      Return
                     </button>
                   </td>
                 </tr>
@@ -137,11 +159,11 @@ const ReservedBooks = () => {
             </tbody>
           </table>
         ) : (
-          <div className="text-center text-white mt-6">No reserved books found.</div>
+          <div className="text-center text-white mt-6">No issued books found.</div>
         )}
       </div>
     </div>
   );
-};
+}
 
-export default ReservedBooks;
+export default Issuebooks;
