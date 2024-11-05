@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate, usePrompt } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
 const A_ManageBooks = () => {
@@ -7,9 +7,29 @@ const A_ManageBooks = () => {
 
   // Handle logout logic
   const handleLogout = () => {
-    // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    // Clear authentication tokens or any related data
+    navigate('/');
   };
+
+  // Use Prompt to block navigation
+  const isBlocking = true; // Set this based on a condition (e.g., form unsaved, session active)
+
+  useEffect(() => {
+    // Prevent history back navigation
+    const preventBack = () => {
+      window.history.forward();
+    };
+
+    preventBack();
+
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave this page?";
+    };
+
+    return () => {
+      window.onbeforeunload = null; // Clean up on component unmount
+    };
+  }, []);
 
   return (
     <div>
@@ -42,20 +62,32 @@ const A_ManageBooks = () => {
               to="/add-books"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              ADD
+              Adding Books
             </Link>
             
             <Link 
               to="/A_search"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              SEARCH
+              Search Books
             </Link>
             <Link 
               to="/listbook"
               className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
             >
-              LIST
+              Books
+            </Link>
+            <Link 
+              to="/reserved"
+              className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Reserved Books 
+            </Link>
+            <Link 
+              to="/issued"
+              className="w-full text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+               Issue Books
             </Link>
           </div>
         </div>

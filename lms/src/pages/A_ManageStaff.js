@@ -5,10 +5,19 @@ import backgroundImage from '../assets/lms2.jpg';
 const A_ManageStaffs = () => {
   const navigate = useNavigate();
 
+  
+<script type="text/javascript">
+  function preventBack() {
+      window.history.forward()
+  }
+  setTimeout("preventBack()", 0);
+  window.onunload = function () { null };
+</script>
+
   // Handle logout logic here
   const handleLogout = () => {
     // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -52,13 +61,14 @@ const A_ManageStaffs = () => {
             >
               SEARCH
             </Link>
-
+            
             <Link 
               to="/liststaff"
               className="text-lg text-black font-semibold py-3 px-6 bg-gray-200 rounded-md hover:bg-gray-300 w-full text-center"
             >
               LIST
             </Link>
+          
           </div>
         </div>
       </main>

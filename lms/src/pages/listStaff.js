@@ -27,7 +27,7 @@ const ListStaff = () => {
 
   // Handle logout logic
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (

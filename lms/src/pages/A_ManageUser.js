@@ -8,7 +8,7 @@ const A_ManageUser = () => {
   // Handle logout logic here
   const handleLogout = () => {
     // Clear authentication tokens (if any) and redirect to login
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -59,6 +59,8 @@ const A_ManageUser = () => {
             >
               LIST
             </Link>
+               
+             
           </div>
         </div>
       </main>

@@ -12,7 +12,14 @@ const bookSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   dept: { type: String, required: true },
   cover_type: { type: String, required: true },
-  status: { type: String, enum: ['Active', 'Deactive', 'Reserved'], required: true }, // Include 'Reserved' status
+  status: { type: String, enum: ['Active', 'Deactive', 'Reserved', 'Issued'], default: 'Active' },
+  reservedBy: { type: String }, // Store user's name directly as a string
+  reservedAt: { type: Date },
+  reserved:{type:String,required:true},
+  
+  issuedAt: { type: Date }, 
+  dueDate: { type: Date }, // New field for due date
+  fine: { type: Number, default: 0 }, // New field for fine
 });
 
 module.exports = mongoose.model('Book', bookSchema);

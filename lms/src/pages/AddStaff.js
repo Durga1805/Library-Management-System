@@ -10,7 +10,18 @@ function AddStaff() {
     phoneno: '',
     email: '',
     dept: '',
-    status: 'active', // Default status is 'active'
+    status: 'active',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState({
+    userid: '',
+    name: '',
+    dob: '',
+    address: '',
+    phoneno: '',
+    email: '',
+    dept: '',
     password: '',
   });
 
@@ -21,20 +32,67 @@ function AddStaff() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    validateField(e.target.name, e.target.value);
+  };
+
+  const validateField = (name, value) => {
+    let message = '';
+    switch (name) {
+      case 'dob':
+        const birthYear = new Date(value).getFullYear();
+        if (birthYear < 1800 || birthYear > 2009) {
+          message = 'Date of Birth must be between 1800 and 2009.';
+        }
+        break;
+      case 'password':
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        if (!passwordRegex.test(value)) {
+          message =
+            'Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.';
+        }
+        break;
+      case 'phoneno':
+        const phoneRegex = /^[6789]\d{9}$/;
+        if (!phoneRegex.test(value)) {
+          message = 'Invalid phone number.';
+        }
+        break;
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          message = 'Please enter a valid email address.';
+        }
+        break;
+      default:
+        message = '';
+    }
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: message,
+    }));
+  };
+
+  const validateForm = () => {
+    const formIsValid = !Object.values(errors).some((error) => error !== '');
+    return formIsValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!validateForm()) {
+      alert('Please fix the validation errors.');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:8080/api/addstaff', { // use port 5000
+      const response = await fetch('http://localhost:8080/api/addstaff', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-      
 
       if (response.ok) {
         alert('Staff registered successfully!');
@@ -49,6 +107,7 @@ function AddStaff() {
           status: 'active',
           password: '',
         });
+        setErrors({});
       } else {
         alert('Error registering staff!');
       }
@@ -59,7 +118,7 @@ function AddStaff() {
   };
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   const handleBack = () => {
@@ -77,25 +136,23 @@ function AddStaff() {
         backgroundPosition: 'center',
       }}
     >
-      {/* Header with Logout and Back Button */}
       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
         <div className='h-full container mx-auto flex items-center px-4 justify-between'>
           <h1 className="text-white text-xl font-bold">LMS</h1>
           <nav className="flex space-x-4">
-            <Link to="/manage-users" className="text-white hover:text-gray-200">Back</Link>
+            <Link to="/manage-staffs" className="text-white hover:text-gray-200">Back</Link>
             <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
           </nav>
         </div>
       </header>
 
-      {/* Form Content */}
       <div
         style={{
           flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingTop: '5rem', // Add padding for header space
+          paddingTop: '5rem',
         }}
       >
         <div className="bg-white bg-opacity-90 p-8 rounded-lg shadow-lg w-96">
@@ -110,11 +167,12 @@ function AddStaff() {
                 name="userid"
                 value={formData.userid}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.userid ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="text"
                 placeholder="Enter User ID"
                 required
               />
+              {errors.userid && <p className="text-red-500 text-xs italic">{errors.userid}</p>}
             </div>
 
             {/* Name */}
@@ -126,11 +184,12 @@ function AddStaff() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="text"
                 placeholder="Enter Name"
                 required
               />
+              {errors.name && <p className="text-red-500 text-xs italic">{errors.name}</p>}
             </div>
 
             {/* Date of Birth */}
@@ -142,10 +201,11 @@ function AddStaff() {
                 name="dob"
                 value={formData.dob}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.dob ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="date"
                 required
               />
+              {errors.dob && <p className="text-red-500 text-xs italic">{errors.dob}</p>}
             </div>
 
             {/* Email */}
@@ -157,11 +217,12 @@ function AddStaff() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="email"
                 placeholder="Enter Email"
                 required
               />
+              {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
             </div>
 
             {/* Phone Number */}
@@ -173,11 +234,12 @@ function AddStaff() {
                 name="phoneno"
                 value={formData.phoneno}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.phoneno ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="text"
                 placeholder="Enter Phone Number"
                 required
               />
+              {errors.phoneno && <p className="text-red-500 text-xs italic">{errors.phoneno}</p>}
             </div>
 
             {/* Address */}
@@ -189,11 +251,12 @@ function AddStaff() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="text"
                 placeholder="Enter Address"
                 required
               />
+              {errors.address && <p className="text-red-500 text-xs italic">{errors.address}</p>}
             </div>
 
             {/* Department */}
@@ -205,11 +268,12 @@ function AddStaff() {
                 name="dept"
                 value={formData.dept}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.dept ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="text"
                 placeholder="Enter Department"
                 required
               />
+              {errors.dept && <p className="text-red-500 text-xs italic">{errors.dept}</p>}
             </div>
 
             {/* Password */}
@@ -221,11 +285,12 @@ function AddStaff() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`shadow border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="password"
                 placeholder="Enter Password"
                 required
               />
+              {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
             </div>
 
             <div className="flex items-center justify-between">

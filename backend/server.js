@@ -5,6 +5,9 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
+
+
 require('dotenv').config();
 
 const app = express();
@@ -27,6 +30,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/MyDatabas
 app.use('/api', userRoutes);
 app.use('/api', bookRoutes);  // Add book routes
 app.use('/api', staffRoutes);
+app.use('/api', feedbackRoutes);
 
 // Start the server
 app.listen(port, () => {

@@ -51,7 +51,7 @@ const A_SearchStaff = () => {
           </div>
           <nav className="flex space-x-4">
             <Link to="/Adminpage" className="text-white hover:text-gray-200">Back</Link>
-            <Link to="/login" className="text-white hover:text-gray-200">Logout</Link>
+            <Link to="/" className="text-white hover:text-gray-200">Logout</Link>
           </nav>
         </div>
       </header>
@@ -113,7 +113,7 @@ const A_SearchStaff = () => {
                 ))}
               </ul>
             ) : (
-              !loading && !error && <p>No results found</p> // Add error condition to ensure only if no results and no error
+              !loading  // Add error condition to ensure only if no results and no error
             )}
           </div>
         </div>

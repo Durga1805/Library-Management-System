@@ -5,8 +5,16 @@ import backgroundImage from '../assets/lms2.jpg';
 const AdminPage = () => {
   const navigate = useNavigate();
 
+<script type="text/javascript">
+  function preventBack() {
+      window.history.forward()
+  }
+  setTimeout("preventBack()", 0);
+  window.onunload = function () { null };
+</script>
+
   const handleLogout = () => {
-    navigate('/login'); // Redirects to the login page
+    navigate('/'); // Redirects to the login page
   };
 
   return (
@@ -67,41 +75,11 @@ const AdminPage = () => {
                 Manage Staffs
               </Link>
             </li>
+            
+           
             <li className="mb-4">
               <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Manage Periodicals
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Holidays
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Borrowing And Return
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Visitor Tracking
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to=""
+                to="/list-feedback"
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 FeedBack & Suggestions

@@ -8,7 +8,9 @@ const {
   updateUserStatus,
   searchUsers,
   updateUserProfile,
+  getUserProfile,
 } = require('../controllers/userController');
+// const { forgotPassword, resetPassword } = require('../controllers/forgotPasswordController');
 
 const router = express.Router();
 
@@ -31,7 +33,18 @@ router.put('/users/:userId/status', updateUserStatus);
 // GET route for searching users
 router.get('/users/search', searchUsers);
 
-// PUT route for updating user profile, including profile picture
+// PUT route for updating user profile (including profile picture)
 router.put('/users/profile', upload.single('profilePic'), updateUserProfile);
+
+// GET route for fetching user profile by userId
+router.get('/profile/:userId', getUserProfile);
+
+// // Route for forgot password
+// router.post('/forgot-password', forgotPassword);
+
+
+// // Route for resetting password
+// router.post('/reset-password', resetPassword);
+
 
 module.exports = router;

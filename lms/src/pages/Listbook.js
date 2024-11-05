@@ -6,7 +6,8 @@ function ListBooks() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Added navigate hook for logout
+  const [sortConfig, setSortConfig] = useState({ key: 'accno', direction: 'ascending' });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -27,6 +28,25 @@ function ListBooks() {
     fetchBooks();
   }, []);
 
+  // Sort logic, only for 'accno', 'author', and 'title'
+  const sortBooks = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedBooks = [...books].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? 1 : -1;
+    }
+    return 0;
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -36,13 +56,13 @@ function ListBooks() {
   }
 
   const handleLogout = () => {
-    navigate('/login'); // Redirects to the login page
+    navigate('/'); // Redirects to the login page
   };
 
   return (
     <div>
-       {/* Header Section */}
-       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
+      {/* Header Section */}
+      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
         <div className='h-full container mx-auto flex items-center px-4 justify-between'>
           <div className='flex items-center'>
             <h1 className="text-white text-xl font-bold">LMS</h1>
@@ -66,11 +86,17 @@ function ListBooks() {
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
             <thead>
               <tr>
-                <th className="border px-4 py-2">Accession No</th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortBooks('accno')}>
+                  Accession No {sortConfig.key === 'accno' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
                 <th className="border px-4 py-2">Call No</th>
-                <th className="border px-4 py-2">Title</th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortBooks('title')}>
+                  Title {sortConfig.key === 'title' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
                 <th className="border px-4 py-2">Year of Publication</th>
-                <th className="border px-4 py-2">Author</th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortBooks('author')}>
+                  Author {sortConfig.key === 'author' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
                 <th className="border px-4 py-2">Publisher</th>
                 <th className="border px-4 py-2">ISBN</th>
                 <th className="border px-4 py-2">No of Pages</th>
@@ -81,7 +107,7 @@ function ListBooks() {
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => (
+              {sortedBooks.map((book) => (
                 <tr key={book._id}>
                   <td className="border px-4 py-2">{book.accno}</td>
                   <td className="border px-4 py-2">{book.call_no}</td>

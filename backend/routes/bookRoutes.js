@@ -1,9 +1,20 @@
+// LIBRARY_MANAGEMENT_SYSTEM\backend\routes\bookRoutes.js
 const express = require('express');
 const multer = require('multer');
-const { uploadBooksCSV, listBooks, searchBooks, updateBookStatus, reserveBook } = require('../controllers/bookController');
+const {
+    uploadBooksCSV,
+    listBooks,
+    searchBooks,
+    reserveBook,
+    cancelReservation,
+    updateBookStatus,
+    issueBook,
+    handleReturnBook,
+} = require('../controllers/bookController');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' }); // Temporary upload folder
+// Temporary upload folder
+const upload = multer({ dest: 'uploads/' }); 
 
 // POST route for uploading CSV file and adding books
 router.post('/books/upload-csv', upload.single('file'), uploadBooksCSV);
@@ -14,10 +25,22 @@ router.get('/books', listBooks);
 // GET route for searching books
 router.get('/books/search', searchBooks);
 
-// PUT route to update the status of a book
-router.put('/books/:id/status', updateBookStatus);
+// Reserve a book
+router.post('/books/:bookId/reserve', reserveBook); 
 
-// POST route to reserve a book
-router.post('/books/:bookId/reserve', reserveBook);
+
+// Cancel a reservation and change the book status to 'Active'
+router.post('/books/:bookId/cancel', cancelReservation);
+
+// Define the PUT route
+router.put('/books/:id/status', updateBookStatus); 
+
+router.patch('/books/issue/:id', issueBook);
+
+
+// Route to return a book
+router.patch('/books/return/:id', handleReturnBook);
+
 
 module.exports = router;
+
