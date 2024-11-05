@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://durgasreenivasan2003:*****@library.z52iw.mongodb.net/Library', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/MyDatabase', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
