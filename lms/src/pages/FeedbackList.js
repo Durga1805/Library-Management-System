@@ -87,7 +87,7 @@ const FeedbackList = () => {
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/feedback');
+        const response = await fetch('https://library-management-system-backend-4gdn.onrender.com/api/feedback');
         if (!response.ok) {
           throw new Error('Failed to fetch feedback');
         }

@@ -12,7 +12,7 @@ const ListStaff = () => {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/liststaff');
+        const response = await fetch('https://library-management-system-backend-4gdn.onrender.com/api/liststaff');
         const data = await response.json();
         setStaffList(data);
         setLoading(false); // Set loading to false after data is fetched

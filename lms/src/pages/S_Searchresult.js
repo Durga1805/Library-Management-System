@@ -41,7 +41,7 @@ const S_Searchresult = () => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8080/api/books/search`, {
+        const response = await axios.get(`https://library-management-system-backend-4gdn.onrender.com/api/books/search`, {
           params: { type: searchType, query: searchQuery },
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Include token in request
         });
