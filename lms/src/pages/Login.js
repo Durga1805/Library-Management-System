@@ -25,7 +25,7 @@ const Login = () => {
     setLoading(true);  // Show loading during request
 
     try {
-      const response = await axios.post('https://library-management-system-backend-4gdn.onrender.com/login', { email, password });
+      const response = await axios.post('https://library-management-system-backend-4gdn.onrender.com/api/user/login', { email, password });
       if (response.data.success) {
         console.log(response.data)
         localStorage.setItem('userId', response.data.userId);

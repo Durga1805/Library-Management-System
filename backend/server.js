@@ -24,7 +24,7 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 }).catch((error) => console.log('MongoDB connection error:', error));
 
 // Routes
-app.use('/api', userRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api', bookRoutes);  // Add book routes
 app.use('/api', staffRoutes);
 app.use('/api', feedbackRoutes);
