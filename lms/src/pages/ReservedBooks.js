@@ -12,7 +12,7 @@ const ReservedBooks = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get('https://library-management-system-backend-4gdn.onrender.com/api/books');
+        const response = await axios.get('http://localhost:8080/api/books');
         setBooks(response.data || []); // Ensure books is an array
         setLoading(false);
       } catch (error) {
@@ -99,7 +99,7 @@ const ReservedBooks = () => {
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
             <thead className="bg-blue-500 text-white">
               <tr>
-                <th className="px-4 py-2">Acc. No</th>
+                
                 <th className="px-4 py-2">Title</th>
                 <th className="px-4 py-2">Author</th>
                 <th className="px-4 py-2">Reserved By</th>
@@ -110,7 +110,7 @@ const ReservedBooks = () => {
             <tbody>
               {reservedBooks.map((book) => (
                 <tr key={book._id} className="text-gray-700">
-                  <td className="border px-4 py-2">{book.accno}</td>
+                 
                   <td className="border px-4 py-2">{book.title}</td>
                   <td className="border px-4 py-2">{book.author}</td>
                   <td className="border px-4 py-2">{book.reservedBy || 'N/A'}</td>

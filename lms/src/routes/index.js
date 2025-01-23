@@ -34,6 +34,11 @@ import U_issedbooks from '../pages/U_issedbooks';
 import ViewProfile1 from '../pages/ViewProfile1';
 import FeedbackList from '../pages/FeedbackList';
 import History from '../pages/History';
+import Staff_issuedbooks from '../pages/Staff_issuedbooks';
+import Staff_updateProfile from '../pages/Staff_updateProfile';
+// import S_feedback from '../pages/S_feedback';
+import S_viewProfile from '../pages/S_viewProfile';
+import BookingPage from '../pages/BookingPage';
 
 const router = createBrowserRouter([
     {
@@ -173,7 +178,28 @@ const router = createBrowserRouter([
             {
                 path: "history",
                 element: <History />
-            }
+            },
+            {
+                path: "S_issued-books",
+                element: <Staff_issuedbooks />
+            },
+            {
+                path: "edit-staff-details",
+                element: <Staff_updateProfile/>
+            },
+            
+            // {
+            //     path: "S_feedback",
+            //     element: <S_feedback />
+            // },
+            {
+                path: "s_view-profile",
+                element: <S_viewProfile />
+            },
+            {
+                path: "book-booking",
+                element: <BookingPage />
+            },
 
         ]
     }
@@ -182,6 +208,4 @@ const router = createBrowserRouter([
 
 
 export default router;
-
-
 

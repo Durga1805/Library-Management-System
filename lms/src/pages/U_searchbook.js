@@ -4,6 +4,7 @@ import backgroundImage from '../assets/user.jpg'; // ES6 import for background i
 
 const U_searchbook = () => {
   const [searchType, setSearchType] = useState('title');
+  const name = localStorage.getItem('name') || 'User';
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(''); // New state for error message
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to toggle dropdown
@@ -62,6 +63,9 @@ const U_searchbook = () => {
           &larr; Back
         </button>
         <h1 className="text-white text-xl font-bold">LMS</h1>
+        <nav className="flex space-x-4 items-center">
+          <h6 className="text-white hover:text-gray-200">{name ? name : 'User'}</h6>
+           
         <div className="relative" ref={dropdownRef}>
           {/* Profile Picture with Dropdown */}
           {profilePic ? (
@@ -84,7 +88,7 @@ const U_searchbook = () => {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
               <ul>
-                <li>
+                {/* <li>
                   <Link
                     to="/edit-user-details" // Route for editing user details
                     className="block px-4 py-2 text-black hover:bg-gray-200"
@@ -99,7 +103,7 @@ const U_searchbook = () => {
                   >
                     View Profile
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <button
                     onClick={handleLogout}
@@ -112,6 +116,7 @@ const U_searchbook = () => {
             </div>
           )}
         </div>
+        </nav>
         </div>
       </header>
 

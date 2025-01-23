@@ -2,14 +2,16 @@ import './App.css';
 import { Outlet } from 'react-router-dom';
 import Footer from './components/Footer';
 
+
+
 function App() {
   return (
     <>
     
-      <main className="min-h-[calc(100vh-60px)] pt-0">
+      <main >
         <Outlet />
+        
       </main>
-
       {/* Footer */}
       <Footer />
     </>
@@ -17,3 +19,5 @@ function App() {
 }
 
 export default App;
+
+

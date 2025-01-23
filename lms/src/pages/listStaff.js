@@ -1,34 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/lms2.jpg'; // Add the background image import
+import backgroundImage from '../assets/lms2.jpg';
 
 const ListStaff = () => {
   const [staffList, setStaffList] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state to show when data is being fetched
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'userid', direction: 'ascending' });
   const navigate = useNavigate();
 
-  // Fetch staff list on component mount
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const response = await fetch('https://library-management-system-backend-4gdn.onrender.com/api/liststaff');
+        const response = await fetch('http://localhost:8080/api/liststaff');
         const data = await response.json();
         setStaffList(data);
-        setLoading(false); // Set loading to false after data is fetched
       } catch (error) {
-        setError('Error fetching staff list'); // Set error if any issue occurs
-        setLoading(false); // Stop loading in case of error
+        setError('Error fetching staff list');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStaff();
   }, []);
 
-  // Handle logout logic
   const handleLogout = () => {
     navigate('/');
   };
+
+  // Sorting logic
+  const sortStaff = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedStaffList = [...staffList].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? 1 : -1;
+    }
+    return 0;
+  });
 
   return (
     <div>
@@ -68,17 +86,27 @@ const ListStaff = () => {
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
-                  <th className="py-2 px-4 border-b">Staff ID</th>
-                  <th className="py-2 px-4 border-b">Name</th>
-                  <th className="py-2 px-4 border-b">Email</th>
+                  <th className="py-2 px-4 border-b cursor-pointer" onClick={() => sortStaff('userid')}>
+                    Staff ID {sortConfig.key === 'userid' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 border-b cursor-pointer" onClick={() => sortStaff('name')}>
+                    Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 border-b cursor-pointer" onClick={() => sortStaff('email')}>
+                    Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
                   <th className="py-2 px-4 border-b">Phone</th>
-                  <th className="py-2 px-4 border-b">Department</th>
-                  <th className="py-2 px-4 border-b">Status</th>
+                  <th className="py-2 px-4 border-b cursor-pointer" onClick={() => sortStaff('dept')}>
+                    Department {sortConfig.key === 'dept' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 border-b cursor-pointer" onClick={() => sortStaff('status')}>
+                    Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {staffList.length > 0 ? (
-                  staffList.map((staff) => (
+                {sortedStaffList.length > 0 ? (
+                  sortedStaffList.map((staff) => (
                     <tr key={staff._id}>
                       <td className="py-2 px-4 border-b">{staff.userid}</td>
                       <td className="py-2 px-4 border-b">{staff.name}</td>

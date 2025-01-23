@@ -1,33 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const S_searchbook = () => {
   const [searchType, setSearchType] = useState('title');
   const [searchQuery, setSearchQuery] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // State for error message
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [profilePic, setProfilePic] = useState(''); // Placeholder for profile picture URL
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   // Prevent back navigation
   useEffect(() => {
     const preventBack = () => {
       window.history.forward();
     };
-
     setTimeout(preventBack, 0);
 
-    // Prevent back navigation on unload
     window.onunload = function () {
       return null;
     };
   }, []);
 
+  // Handle back button navigation
+  const handleBack = () => navigate(-1);
+
+  // Handle profile dropdown toggle
+  const handleProfileClick = () => setIsDropdownOpen(!isDropdownOpen);
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Handle the search process
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Navigate to search results if valid input
       navigate(`/search-books?type=${searchType}&query=${searchQuery}`);
     } else {
-      // Show error message for empty input
       const searchTypeLabel = searchType.charAt(0).toUpperCase() + searchType.slice(1);
       setErrorMessage(`Please enter a valid ${searchTypeLabel}.`);
     }
@@ -35,21 +52,68 @@ const S_searchbook = () => {
 
   // Handle logout by clearing local storage and redirecting to login
   const handleLogout = () => {
-    localStorage.removeItem('token');  // Clear token from localStorage
-    localStorage.removeItem('userId');  // Clear userId from localStorage
-    navigate('/');  // Redirect to login page
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    navigate('/');
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header Section */}
-      <header className="bg-blue-600 p-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-white text-2xl font-bold">Library Management System</h1>
-          <nav className="flex space-x-4">
-            <Link to="/staffpage" className="text-white hover:text-gray-300">Back</Link>
-            <button onClick={handleLogout} className="text-white hover:text-gray-300">Logout</button>
-          </nav>
+      <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
+        <div className="h-full container mx-auto flex items-center px-4 justify-between">
+          <button onClick={handleBack} className="text-white hover:text-gray-200 mr-4">
+            &larr; Back
+          </button>
+          <h1 className="text-white text-xl font-bold">LMS</h1>
+          <div className="relative" ref={dropdownRef}>
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt="Profile"
+                onClick={handleProfileClick}
+                className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+                onClick={handleProfileClick}
+              >
+                <span className="text-white">P</span>
+              </div>
+            )}
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                <ul>
+                  {/* <li>
+                    <Link
+                      to="/edit-staff-details"
+                      className="block px-4 py-2 text-black hover:bg-gray-200"
+                    >
+                      Edit Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/s_view-profile"
+                      className="block px-4 py-2 text-black hover:bg-gray-200"
+                    >
+                      View Profile
+                    </Link>
+                  </li> */}
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -88,7 +152,7 @@ const S_searchbook = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setErrorMessage(''); // Clear error message when typing
+                setErrorMessage('');
               }}
               className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150"
             />
@@ -97,8 +161,9 @@ const S_searchbook = () => {
             <button
               onClick={handleSearch}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center"
+              aria-label="Search"
             >
-              <span role="img" aria-label="search" className="mr-1">🔍</span> Search
+              🔍 Search
             </button>
           </div>
 

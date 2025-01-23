@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/about.jpg'; // Import your background image
 
 const FeedbackForm = () => {
@@ -10,27 +9,45 @@ const FeedbackForm = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const profilePic = localStorage.getItem('profilePic');
   const userId = localStorage.getItem('userId');
-  const userName = localStorage.getItem('userName');
+  const name = localStorage.getItem('name') || 'User';
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    console.log('Comment:', comment);
+    console.log('Rating:', rating);
+    console.log('UserId:', userId);
+    console.log('UserName:', name);
+
+    // Validate required fields
+    if (!comment || rating === 0 || !userId || !name) {
+      setMessage("Please provide a comment, rating, and ensure user information is available.");
+      return;
+    }
+
+    console.log("Payload:", { comment, rating, userId, name });
+
     try {
-      const response = await fetch('https://library-management-system-backend-4gdn.onrender.com/api/feedback', {
+      const response = await fetch('http://localhost:8080/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment, rating ,userId,userName}),
+        body: JSON.stringify({ comment, rating, userId, name }), // Ensure 'name' and 'userId' are correctly sent
       });
+
       const data = await response.json();
+      
       if (response.ok) {
         setMessage('Feedback submitted successfully');
         setComment('');
         setRating(0);
       } else {
-        setMessage(data.error);
+        console.error("Server response error:", data);
+        setMessage(data.error || 'Error submitting feedback');
       }
     } catch (error) {
+      console.error("Error in submitting feedback:", error);
       setMessage('Error submitting feedback');
     }
   };
@@ -74,54 +91,41 @@ const FeedbackForm = () => {
             &larr; Back
           </button>
           <h1 className="text-white text-xl font-bold">LMS</h1>
-          <div className="relative" ref={dropdownRef}>
-            {profilePic ? (
-              <img
-                src={profilePic}
-                alt="Profile"
-                onClick={handleProfileClick}
-                className="w-10 h-10 rounded-full object-cover cursor-pointer"
-              />
-            ) : (
-              <div
-                className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
-                onClick={handleProfileClick}
-              >
-                <span className="text-white">P</span>
-              </div>
-            )}
+          <nav className="flex space-x-4 items-center">
+            <h6 className="text-white hover:text-gray-200">{name ? name : 'User'}</h6>
+            <div className="relative" ref={dropdownRef}>
+              {profilePic ? (
+                <img
+                  src={profilePic}
+                  alt="Profile"
+                  onClick={handleProfileClick}
+                  className="w-10 h-10 rounded-full object-cover cursor-pointer"
+                />
+              ) : (
+                <div
+                  className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+                  onClick={handleProfileClick}
+                >
+                  <span className="text-white">P</span>
+                </div>
+              )}
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                <ul>
-                  <li>
-                    <Link
-                      to="/edit-user-details"
-                      className="block px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      Edit Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/view-profile"
-                      className="block px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      View Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                  <ul>
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </nav>
         </div>
       </header>
 
@@ -172,12 +176,12 @@ const FeedbackForm = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
+              className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
               Submit Feedback
             </button>
-            {message && <p className="mt-4 text-center text-gray-700">{message}</p>}
           </form>
+          {message && <p className="mt-4 text-center text-red-500">{message}</p>}
         </div>
       </div>
     </div>

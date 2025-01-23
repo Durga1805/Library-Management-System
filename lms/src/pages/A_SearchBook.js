@@ -8,10 +8,11 @@ const A_SearchBook = () => {
   const [books, setBooks] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sortField, setSortField] = useState('title'); // default sort field
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear authentication tokens and redirect to login
     navigate('/');
   };
 
@@ -50,6 +51,20 @@ const A_SearchBook = () => {
       setMessage('Error updating book status.');
     }
   };
+
+  // Function to handle sorting
+  const handleSort = (field) => {
+    const order = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(order);
+  };
+
+  // Sort books based on selected field and order
+  const sortedBooks = [...books].sort((a, b) => {
+    if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
+    if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   return (
     <div>
@@ -99,28 +114,25 @@ const A_SearchBook = () => {
 
           {message && <p className="text-red-500 text-center mb-4">{message}</p>}
 
-          {books.length > 0 && (
+          {sortedBooks.length > 0 && (
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white">
                 <thead>
                   <tr>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Acc No</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Call No</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Title</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Author</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Year</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Publisher</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">ISBN</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Pages</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Price</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Department</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Cover Type</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Status</th>
+                    {['accno', 'call_no', 'title', 'author', 'year_of_publication', 'publisher', 'isbn', 'no_of_pages', 'price', 'dept', 'cover_type', 'status'].map(field => (
+                      <th
+                        key={field}
+                        onClick={() => handleSort(field)}
+                        className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600 cursor-pointer"
+                      >
+                        {field.replace('_', ' ').toUpperCase()} {sortField === field && (sortOrder === 'asc' ? '▲' : '▼')}
+                      </th>
+                    ))}
                     <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {books.map((book) => (
+                  {sortedBooks.map((book) => (
                     <tr key={book._id}>
                       <td className="py-2 px-4 border-b">{book.accno}</td>
                       <td className="py-2 px-4 border-b">{book.call_no}</td>

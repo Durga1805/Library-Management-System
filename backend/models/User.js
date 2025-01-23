@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   dept: { type: String, required: true },
   status: { type: String, required: true },
   password: { type: String, required: true },
-  profilePic: { type: Buffer },
+  // profilePic: { type: Buffer },
   resetPasswordToken: { type: String }, // Field to store the token
   resetPasswordExpires: { type: Date },  // Storing image as Buffer
   role: { type: String, default: 'student' }, // Role is either 'student' or 'staff'

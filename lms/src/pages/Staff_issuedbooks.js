@@ -1,12 +1,10 @@
-// LIBRARY_MANAGEMENT_SYSTEM\lms\src\pages\U_issedbooks.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
-function U_issedbooks() {
+function Staff_issuedbooks() {
   const [books, setBooks] = useState([]);
-  const name = localStorage.getItem('name') || 'User';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -44,14 +42,14 @@ function U_issedbooks() {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const dropdown = document.getElementById('profileDropdown');
-      if (dropdown && !dropdown.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
+  const handleClickOutside = (event) => {
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown && !dropdown.contains(event.target)) {
+      setIsDropdownOpen(false);
+    }
+  };
 
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -59,7 +57,7 @@ function U_issedbooks() {
   }, []);
 
   const handleBack = () => {
-    navigate('/userpage');
+    navigate('/staffpage');
   };
 
   const calculateFine = (dueDate) => {
@@ -76,53 +74,28 @@ function U_issedbooks() {
       alert('No fine to pay for this book.');
       return;
     }
-  
+
     try {
       const response = await axios.post('http://localhost:8080/api/payments', {
         userId,
         bookId,
         amount: fine,
       });
-  
-      if (response.status === 200) {
-        const { orderId, amount, currency } = response.data;
-  
-        const options = {
-          key: 'rzp_test_uMGUQEKTOz0D0k', // Replace with your Razorpay Key ID
-          amount: amount,
-          currency: currency,
-          name: 'Library Management System',
-          description: 'Fine Payment',
-          order_id: orderId,
-          handler: function (paymentResponse) {
-            alert('Payment successful!');
-            setBooks((prevBooks) =>
-              prevBooks.map((book) =>
-                book._id === bookId ? { ...book, fine: 0 } : book
-              )
-            );
-          },
-          prefill: {
-            name: localStorage.getItem('name') || 'User',
-            email: 'durgasreenivasan2003@gmail.com',
-            contact: '7561076575',
-          },
-          theme: {
-            color: '#3399cc',
-          },
-        };
-  
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
+
+      if (response && response.status === 200) {
+        alert('Fine paid successfully!');
+        setBooks((prevBooks) =>
+          prevBooks.map((book) =>
+            book._id === bookId ? { ...book, fine: 0 } : book
+          )
+        );
       } else {
-        throw new Error('Failed to create Razorpay order');
+        throw new Error('Payment failed');
       }
     } catch (error) {
       alert('Error processing payment: ' + error.message);
     }
   };
-  
-  
 
   if (loading) {
     return <div>Loading...</div>;
@@ -141,54 +114,48 @@ function U_issedbooks() {
         color: 'white',
       }}
     >
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <button 
-            onClick={handleBack} 
-            className="text-white hover:text-gray-200 mr-4"
-          >
+      <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
+        <div className="h-full container mx-auto flex items-center px-4 justify-between">
+          <button onClick={handleBack} className="text-white hover:text-gray-200 mr-4">
             &larr; Back
           </button>
           <h1 className="text-white text-xl font-bold">LMS</h1>
-          <nav className="flex space-x-4 items-center">
-            <h6 className="text-white hover:text-gray-200">{name}</h6>
-            <div className="relative" id="profileDropdown">
-              {profilePic ? (
-                <img
-                  src={profilePic}
-                  alt="Profile"
-                  onClick={handleProfileClick}
-                  className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
-                  onClick={handleProfileClick}
-                >
-                  <span className="text-white">P</span>
-                </div>
-              )}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                  <ul>
-                    <li>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </nav>
+          <div className="relative" id="profileDropdown">
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt="Profile"
+                onClick={handleProfileClick}
+                className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+                onClick={handleProfileClick}
+              >
+                <span className="text-white">P</span>
+              </div>
+            )}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                <ul>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="container mx-auto pt-20">
-        <h1 className="text-3xl font-bold mb-6 text-center">Your Issued Books</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">Staff Issued Books</h1>
         {books && books.length > 0 ? (
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
             <thead className="bg-blue-500 text-white">
@@ -211,29 +178,17 @@ function U_issedbooks() {
                     <td className="border px-4 py-2">{book.author}</td>
                     <td className="border px-4 py-2">
                       {book.reservedAt
-                        ? new Date(book.reservedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
+                        ? new Date(book.reservedAt).toLocaleDateString('en-US')
                         : 'N/A'}
                     </td>
                     <td className="border px-4 py-2">
                       {book.issuedAt
-                        ? new Date(book.issuedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
+                        ? new Date(book.issuedAt).toLocaleDateString('en-US')
                         : 'N/A'}
                     </td>
                     <td className="border px-4 py-2">
                       {book.dueDate
-                        ? new Date(book.dueDate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
+                        ? new Date(book.dueDate).toLocaleDateString('en-US')
                         : 'N/A'}
                     </td>
                     <td className="border px-4 py-2">₹{fine}</td>
@@ -260,4 +215,4 @@ function U_issedbooks() {
   );
 }
 
-export default U_issedbooks;
+export default Staff_issuedbooks;

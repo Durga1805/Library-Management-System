@@ -1,38 +1,52 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const History = () => {
   const [historyData, setHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const dropdownRef = useRef(null); // Reference to detect click outside dropdown
-  const profilePic = localStorage.getItem('profilePic'); // Get profile picture from local storage
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to toggle dropdown
-
+  const dropdownRef = useRef(null);
+  const profilePic = localStorage.getItem('profilePic');
+  const userId = localStorage.getItem('userId');
+  const name = localStorage.getItem('name') || 'User';
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const response = await axios.get(`/api/history`);
-        setHistoryData(response.data);
-      } catch (error) {
-        console.error('Error fetching history data:', error);
-      }
-    };
+    if (!userId) {
+      
+      navigate('/');
+     // Redirect to login if not logged in
+    }
+
+// In History.js
+const fetchHistory = async () => {
+  try {
+    setLoading(true);
+    // Update the URL to match the backend route
+    const response = await axios.get(`/books/history?userId=${userId}`);
+    setHistoryData(response.data);
+  } catch (error) {
+    setError('Failed to load history. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
     fetchHistory();
-  }, []);
+  }, [userId, navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('profilePic');
+    localStorage.clear();
     navigate('/');
   };
 
-  // Handle dropdown toggle
   const handleProfileClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  // Handle click outside dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,96 +58,80 @@ const History = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [dropdownRef]);
-
-  const handleBack = () => {
-    navigate('/userpage'); // Navigate back to the previous page
-  };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header Section */}
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <button 
-            onClick={handleBack} 
-            className="text-white hover:text-gray-200 mr-4"
-          >
+      <header className="h-16 bg-gradient-to-r from-blue-500 to-red-700 shadow-lg fixed w-full z-40">
+        <div className="container mx-auto h-full flex items-center justify-between px-4">
+          <button onClick={() => navigate('/userpage')} className="text-white hover:text-gray-300">
             &larr; Back
           </button>
-          <h1 className="text-white text-xl font-bold">LMS</h1>
-          <div className="relative" ref={dropdownRef}>
+          <h1 className="text-xl font-bold text-white">LMS - History</h1>
+          <nav className="flex space-x-4 items-center">
+          <h6 className="text-white hover:text-gray-200">{name ? name : 'User'}</h6>
             {/* Profile Picture with Dropdown */}
+            </nav>
+          <div className="relative" ref={dropdownRef}>
             {profilePic ? (
-              <img 
-                src={profilePic} 
-                alt="Profile" 
-                onClick={handleProfileClick} 
-                className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              <img
+                src={profilePic}
+                alt="Profile"
+                onClick={handleProfileClick}
+                className="w-10 h-10 rounded-full cursor-pointer"
               />
             ) : (
-              <div 
-                className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
+              <div
+                className="w-10 h-10 rounded-full bg-gray-400 text-white flex items-center justify-center cursor-pointer"
                 onClick={handleProfileClick}
               >
-                <span className="text-white">P</span>
+                P
               </div>
             )}
-            
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                <ul>
-                  <li>
-                    <Link
-                      to="/edit-user-details"
-                      className="block px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      Edit Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/view-profile"
-                      className="block px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      View Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </ul>
+              <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>
         </div>
       </header>
-
-      {/* Main Content Section */}
-      <div className="container mx-auto p-6 pt-24">
-        <h2 className="text-2xl font-bold mb-4">History</h2>
-        <div className="bg-white shadow rounded p-4">
-          {historyData.length > 0 ? (
-            historyData.map((record, index) => (
-              <div key={index} className="mb-4">
-                <p><strong>Book:</strong> {record.bookTitle}</p>
-                <p><strong>Status:</strong> {record.status}</p>
-                <p><strong>Date:</strong> {record.date}</p>
-                {record.fine && <p><strong>Fine:</strong> ₹{record.fine}</p>}
-                <hr className="my-2" />
-              </div>
-            ))
-          ) : (
-            <p>No history available.</p>
-          )}
-        </div>
-      </div>
+      <main className="container mx-auto mt-20 px-4">
+        <h2 className="text-2xl font-bold mb-4">Activity History</h2>
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : historyData.length === 0 ? (
+          <p>No history available.</p>
+        ) : (
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2">Title</th>
+                <th className="border px-4 py-2">Type</th>
+                <th className="border px-4 py-2">Date</th>
+                <th className="border px-4 py-2">Fine (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historyData.map((entry, index) => (
+                <tr key={index}>
+                  <td className="border px-4 py-2">{entry.title}</td>
+                  <td className="border px-4 py-2">{entry.type}</td>
+                  <td className="border px-4 py-2">{entry.date || 'N/A'}</td>
+                  <td className="border px-4 py-2">{entry.fine || 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </main>
     </div>
   );
 };

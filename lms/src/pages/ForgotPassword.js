@@ -12,7 +12,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('https://library-management-system-backend-4gdn.onrender.com/api/forgot-password', { email });
+      const response = await axios.post('http://localhost:8080/api/forgot-password', { email });
       if (response.data.success) {
         setMessage('Password reset link sent to your email');
       } else {

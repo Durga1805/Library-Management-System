@@ -4,8 +4,13 @@ import userImage from '../assets/user.jpg'; // Import the background image
 
 const UserPage = () => {
   const navigate = useNavigate();
-  const userId = localStorage.getItem('name') || 'User'; // Get userId from local storage
-  const profilePic = localStorage.getItem('profilePic'); // Get profile picture from local storage
+  
+  // Retrieve user details from local storage
+  const name = localStorage.getItem('name') || 'User'; // Use a default if undefined
+  const address = localStorage.getItem('address') || 'No Address';
+  const phone = localStorage.getItem('phone') || 'No Phone';
+  const profilePic = localStorage.getItem('profilePic') || ''; // Optional profile picture
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to toggle dropdown
   const dropdownRef = useRef(null); // Reference to detect click outside dropdown
 
@@ -14,7 +19,8 @@ const UserPage = () => {
     const preventBack = () => {
       window.history.forward();
     };
- console.log(localStorage)
+
+    console.log(localStorage); // Log to check storage values
     preventBack();
     window.onbeforeunload = function () {
       return "Are you sure you want to leave this page?";
@@ -46,8 +52,13 @@ const UserPage = () => {
   }, [dropdownRef]);
 
   const handleLogout = () => {
-    localStorage.removeItem('userId'); // Clear userId from local storage
+    // Clear all relevant user data from local storage
+    localStorage.removeItem('name');
+    localStorage.removeItem('address');
+    localStorage.removeItem('phone');
     localStorage.removeItem('profilePic'); // Optional: Clear profilePic if desired
+    localStorage.removeItem('userId');
+    localStorage.removeItem('token');
     navigate('/'); // Redirect to the login page after logging out
   };
 
@@ -60,6 +71,7 @@ const UserPage = () => {
             <h1 className="text-white text-xl font-bold">LMS</h1>
           </div>
           <nav className="flex space-x-4 items-center">
+          <h6 className="text-white hover:text-gray-200">{name ? name : 'User'}</h6>
             {/* Profile Picture with Dropdown */}
             <div className="relative" ref={dropdownRef}>
               {profilePic ? (
@@ -82,7 +94,7 @@ const UserPage = () => {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                   <ul>
-                    <li>
+                    {/* <li>
                       <Link
                         to="/edit-user-details" // Route for editing user details
                         className="block px-4 py-2 text-black hover:bg-gray-200"
@@ -97,7 +109,7 @@ const UserPage = () => {
                       >
                         View Profile
                       </Link>
-                    </li>
+                    </li> */}
                     <li>
                       <button
                         onClick={handleLogout}
@@ -124,7 +136,8 @@ const UserPage = () => {
         }}
       >
         <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left">
-          <h2 className="text-2xl mb-8 text-black">Welcome {userId}</h2> {/* Display the user's ID */}
+          <h2 className="text-2xl mb-4 text-black">Welcome, {name}</h2> {/* Display the user's name */}
+          
           <ul>
             <li className="mb-4">
               <Link 

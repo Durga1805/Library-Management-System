@@ -10,6 +10,8 @@ const {
     updateBookStatus,
     issueBook,
     handleReturnBook,
+    getAvailableBooks,
+    getHistory,
 } = require('../controllers/bookController');
 
 const router = express.Router();
@@ -40,6 +42,13 @@ router.patch('/books/issue/:id', issueBook);
 
 // Route to return a book
 router.patch('/books/return/:id', handleReturnBook);
+
+
+// Route to fetch available books
+router.get('/books/available', getAvailableBooks);
+
+// GET route for user history
+router.get('/books/history', getHistory);
 
 
 module.exports = router;

@@ -1,24 +1,25 @@
-import React, { useState } from 'react'; // Import React and useState hook
-import axios from 'axios'; // Import axios
-import { Link } from 'react-router-dom'; // Import Link for navigation
-import backgroundImage from '../assets/lms2.jpg'; // Import background image
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import backgroundImage from '../assets/lms2.jpg';
 
 const A_SearchStaff = () => {
-  const [searchType, setSearchType] = useState('userid'); // 'userid' is the default search type
-  const [searchQuery, setSearchQuery] = useState(''); // Starts empty
+  const [searchType, setSearchType] = useState('userid');
+  const [searchQuery, setSearchQuery] = useState('');
   const [staffResults, setStaffResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sortBy, setSortBy] = useState('userid'); // State to store sort field
 
   // Trigger the search only when a search is initiated
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      setError('Please enter a search query'); // Show error if query is empty
+      setError('Please enter a search query');
       return;
     }
 
     setLoading(true);
-    setError(''); // Clear previous errors
+    setError('');
 
     try {
       const response = await axios.get('http://localhost:8080/api/staff/searchstaff', {
@@ -27,19 +28,26 @@ const A_SearchStaff = () => {
 
       if (response.data.length === 0) {
         setError('No results found');
-        setStaffResults([]); // Clear results if none found
+        setStaffResults([]);
       } else {
-        setStaffResults(response.data); // Populate results
-        setError(''); // Clear error if results are found
+        setStaffResults(response.data);
+        setError('');
       }
 
-      setLoading(false); // Stop loading after the request is done
+      setLoading(false);
     } catch (error) {
       console.error('Search error:', error);
       setError('Error occurred while searching.');
-      setLoading(false); // Stop loading in case of error
+      setLoading(false);
     }
   };
+
+  // Sort staff results based on the selected field
+  const sortedResults = [...staffResults].sort((a, b) => {
+    if (a[sortBy] < b[sortBy]) return -1;
+    if (a[sortBy] > b[sortBy]) return 1;
+    return 0;
+  });
 
   return (
     <div>
@@ -57,8 +65,8 @@ const A_SearchStaff = () => {
       </header>
 
       {/* Main Content Section */}
-      <main 
-        className="flex items-center justify-center min-h-screen bg-cover bg-center" 
+      <main
+        className="flex items-center justify-center min-h-screen bg-cover bg-center"
         style={{
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
@@ -96,6 +104,20 @@ const A_SearchStaff = () => {
             </button>
           </div>
 
+          {/* Sort By Dropdown */}
+          <div className="mt-4">
+            <label className="mr-2">Sort by:</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md"
+            >
+              <option value="userid">User ID</option>
+              <option value="name">Name</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+
           {/* Error Message */}
           {error && <p className="text-red-500 mt-4">{error}</p>}
 
@@ -104,16 +126,16 @@ const A_SearchStaff = () => {
 
           {/* Search Results */}
           <div className="mt-6">
-            {staffResults.length > 0 ? (
+            {sortedResults.length > 0 ? (
               <ul>
-                {staffResults.map((staff) => (
+                {sortedResults.map((staff) => (
                   <li key={staff._id} className="border-b py-2">
                     {staff.userid}: {staff.name} - {staff.email} - {staff.dept}
                   </li>
                 ))}
               </ul>
             ) : (
-              !loading  // Add error condition to ensure only if no results and no error
+              !loading && <p className="mt-4 text-gray-500">No results to display.</p>
             )}
           </div>
         </div>
@@ -122,4 +144,4 @@ const A_SearchStaff = () => {
   );
 };
 
-export default A_SearchStaff; // Default export of the component
+export default A_SearchStaff;

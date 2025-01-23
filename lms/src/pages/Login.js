@@ -23,18 +23,16 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);  // Show loading during request
-
+  
     try {
-      const response = await axios.post('https://library-management-system-backend-4gdn.onrender.com/api/login', { email, password });
+      const response = await axios.post('http://localhost:8080/api/login', { email, password });
       if (response.data.success) {
-        console.log(response.data)
+        // Store user details in localStorage
         localStorage.setItem('userId', response.data.userId);
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('email', response.data.email);
         localStorage.setItem('phone', response.data.phone);
         localStorage.setItem('address', response.data.address);
-        localStorage.setItem('dob', response.data.dob);
-        localStorage.setItem('role', 'user');  // Default to user role
         
         // Navigate to user page after successful login
         navigate('/userpage');
@@ -48,6 +46,7 @@ const Login = () => {
       setLoading(false);  // Hide loading after request
     }
   };
+  
 
   
 

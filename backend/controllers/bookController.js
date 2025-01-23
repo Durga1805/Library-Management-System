@@ -1,6 +1,7 @@
 const Book = require('../models/Book');
 const User = require('../models/User');
 const Staff = require('../models/Staff');
+const History = require('../models/History');
 const csv = require('csv-parser');
 const fs = require('fs');
 const mongoose = require('mongoose');
@@ -8,39 +9,70 @@ const mongoose = require('mongoose');
 // Function to upload books from a CSV file
 const uploadBooksCSV = async (req, res) => {
   const results = [];
-  fs.createReadStream(req.file.path)
-    .pipe(csv())
-    .on('data', (data) => {
-      if (data.accno && data.title && data.author && data.status) {
-        results.push({
-          accno: data.accno,
-          call_no: data.call_no || '',
-          title: data.title,
-          year_of_publication: Number(data.year_of_publication) || null,
-          author: data.author,
-          publisher: data.publisher || '',
-          isbn: data.isbn || '',
-          no_of_pages: Number(data.no_of_pages) || null,
-          price: Number(data.price) || null,
-          dept: data.dept || '',
-          cover_type: data.cover_type || '',
-          status: data.status,
-        });
-      }
-    })
-    .on('end', async () => {
-      fs.unlinkSync(req.file.path);
-      try {
-        if (results.length > 0) {
-          await Book.insertMany(results);
-          res.status(200).json({ message: 'Books uploaded successfully!' });
-        } else {
-          res.status(400).json({ message: 'No valid data in the CSV file.' });
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ message: 'No file uploaded.' });
+  }
+
+  try {
+    // Read CSV file
+    fs.createReadStream(file.path)
+      .pipe(csv())
+      .on('data', (data) => {
+        results.push(data);
+      })
+      .on('end', async () => {
+        const duplicates = [];
+        const booksToAdd = [];
+
+        // Iterate over the parsed CSV data
+        for (let row of results) {
+          const { accno, isbn } = row;
+
+          // Check if the book already exists based on accno or isbn
+          const existingBook = await Book.findOne({ 
+            $or: [{ accno }, { isbn }] 
+          });
+
+          if (existingBook) {
+            // If a duplicate is found, add it to the duplicates array
+            duplicates.push({ title: row.title, accno, isbn });
+          } else {
+            // If no duplicate, create a new book object
+            const newBook = new Book({
+              accno: row.accno,
+              call_no: row.call_no,
+              title: row.title,
+              year_of_publication: parseInt(row.year_of_publication, 10),
+              author: row.author,
+              publisher: row.publisher,
+              isbn: row.isbn,
+              no_of_pages: parseInt(row.no_of_pages, 10),
+              price: parseFloat(row.price),
+              dept: row.dept,
+              cover_type: row.cover_type,
+              status: row.status,
+            });
+            booksToAdd.push(newBook);
+          }
         }
-      } catch (error) {
-        res.status(500).json({ message: 'Error uploading books', error: error.message });
-      }
-    });
+
+        // Save all the books that are not duplicates
+        if (booksToAdd.length > 0) {
+          await Book.insertMany(booksToAdd);
+        }
+
+        res.status(201).json({
+          message: 'CSV processed successfully.',
+          addedBooks: booksToAdd.length,
+          duplicates: duplicates.length,
+          duplicateEntries: duplicates, // Provide detailed duplicate information
+        });
+      });
+  } catch (error) {
+    res.status(500).json({ message: 'Error processing CSV file', error: error.message });
+  }
 };
 
 // Function to list all books
@@ -183,7 +215,7 @@ const issueBook = async (req, res) => {
   }
 };
 
-// Return a book and calculate fine if overdue
+
 // Return a book and calculate fine if overdue
 const handleReturnBook = async (req, res) => {
   const { id } = req.params;
@@ -203,8 +235,8 @@ const handleReturnBook = async (req, res) => {
     }
 
     book.status = 'Active';
-    book.issuedAt = null;
-    book.dueDate = null;
+    // book.issuedAt = null;
+    // book.dueDate = null;
     book.fine = fine;
     await book.save();
 
@@ -221,13 +253,84 @@ const handleReturnBook = async (req, res) => {
   }
 };
 
+// Fetch available books
+const getAvailableBooks = async (req, res) => {
+  try {
+    const availableBooks = await Book.find({ status: 'Available' });
+    res.status(200).json(availableBooks);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching available books', error: error.message });
+  }
+};
+
+
+
+
+const getHistory = async (req, res) => {
+  const { userId } = req.query;
+  console.log('History request received');
+
+  try {
+    // Check if user exists in User or Staff collection
+    let user = await User.findOne({ userid: userId });
+    if (!user) {
+      user = await Staff.findOne({ userid: userId });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Compile user activity history
+    const reservedBooks = user.reservedBooks.map((book) => ({
+      title: book.title,
+      type: 'Reserved',
+      date: book.reservedAt,
+    }));
+
+    const issuedBooks = await Book.find({ reserved: userId, status: 'Issued' });
+    const issuedHistory = issuedBooks.map((book) => ({
+      title: book.title,
+      type: 'Issued',
+      date: book.issuedAt,
+      fine: book.fine || 0,
+    }));
+
+    const returnedBooks = await Book.find({ reserved: userId, status: 'Returned' });
+    const returnedHistory = returnedBooks.map((book) => ({
+      title: book.title,
+      type: 'Returned',
+      date: book.returnedAt,
+      fine: book.fine || 0,
+    }));
+
+    const history = [...reservedBooks, ...issuedHistory, ...returnedHistory];
+    res.status(200).json(history);
+
+    // Optionally, store each action in the History model
+    // await History.create({ userId, action: 'Viewed History', timestamp: new Date() });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching history.', error: error.message });
+  }
+};
+
+
+
+
+
+
+
+
 module.exports = {
   uploadBooksCSV,
   listBooks,
   searchBooks,
   updateBookStatus,
+  getAvailableBooks,
   reserveBook,
   cancelReservation,
   issueBook,
-  handleReturnBook
+  handleReturnBook,
+  getHistory,
 };

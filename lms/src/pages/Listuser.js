@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/lms2.jpg'; // Adjust the path accordingly
+import backgroundImage from '../assets/lms2.jpg';
 
 function ListUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Added navigate hook for logout
+  const [sortConfig, setSortConfig] = useState({ key: 'userid', direction: 'ascending' });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('https://library-management-system-backend-4gdn.onrender.com/api/users');
+        const response = await fetch('http://localhost:8080/api/users');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -27,6 +28,29 @@ function ListUsers() {
     fetchUsers();
   }, []);
 
+  const handleLogout = () => {
+    navigate('/');
+  };
+
+  // Sorting logic
+  const sortUsers = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'ascending' ? 1 : -1;
+    }
+    return 0;
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -34,10 +58,6 @@ function ListUsers() {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
-  const handleLogout = () => {
-    navigate('/'); // Redirects to the login page
-  };
 
   return (
     <div>
@@ -66,18 +86,34 @@ function ListUsers() {
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
             <thead>
               <tr>
-                <th className="border px-4 py-2">User ID</th>
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Date of Birth</th>
-                <th className="border px-4 py-2">Address</th>
-                <th className="border px-4 py-2">Phone No</th>
-                <th className="border px-4 py-2">Email</th>
-                <th className="border px-4 py-2">Department</th>
-                <th className="border px-4 py-2">Status</th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('userid')}>
+                  User ID {sortConfig.key === 'userid' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('name')}>
+                  Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('dob')}>
+                  Date of Birth {sortConfig.key === 'dob' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('address')}>
+                  Address {sortConfig.key === 'address' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('phoneno')}>
+                  Phone No {sortConfig.key === 'phoneno' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('email')}>
+                  Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('dept')}>
+                  Department {sortConfig.key === 'dept' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th className="border px-4 py-2 cursor-pointer" onClick={() => sortUsers('status')}>
+                  Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {sortedUsers.map((user) => (
                 <tr key={user._id}>
                   <td className="border px-4 py-2">{user.userid}</td>
                   <td className="border px-4 py-2">{user.name}</td>

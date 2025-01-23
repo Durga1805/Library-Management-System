@@ -1,0 +1,6 @@
+accno,call_no,title,year_of_publication,author,publisher,isbn,no_of_pages,price,dept,cover_type,status
+26,43210,Cryptography and Network Security,2020,William Stallings,Pearson,9.78013E+12,720,900,IT,Hardcover,Active
+27,32109,Data Mining: Concepts and Techniques,2019,Jiawei Han,Morgan Kaufmann,9.78012E+12,744,850,MCA,Paperback,Active
+28,21098,Deep Learning,2021,Ian Goodfellow,MIT Press,9.78026E+12,775,1050,MCA,Hardcover,Active
+29,10987,The Art of Computer Programming,2018,Donald E. Knuth,Addison-Wesley,9.7802E+12,3168,2200,MCA,Hardcover,Active
+30,98766,Pattern Recognition and Machine Learning,2017,Christopher Bishop,Springer,9.78039E+12,738,980,MCA,Paperback,Active
