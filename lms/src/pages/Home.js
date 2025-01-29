@@ -73,7 +73,7 @@ const Home = () => {
       </header>
 
       <div className="flex-grow flex items-center justify-center">
-        <h1 className="text-3xl font-bold text-center">
+        <h1 className="text-3xl text-white font-bold text-center">
           Welcome to Library Management System..
         </h1>
       </div>

@@ -86,7 +86,9 @@ const UserPage = () => {
                   className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
                   onClick={handleProfileClick} // Toggle dropdown on click
                 >
-                  <span className="text-white">P</span>
+                  <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white">
+                  {name.charAt(0)}
+                </div>
                 </div>
               )}
 

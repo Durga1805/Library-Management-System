@@ -9,21 +9,33 @@ function Staff_issuedbooks() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const name = localStorage.getItem('name') || 'Staff';
   const profilePic = localStorage.getItem('profilePic');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/books`, {
+        const response = await axios.get('http://localhost:8080/api/books', {
           params: { userId },
         });
 
-        const issuedBooks = response.data.filter((book) => book.reserved === userId);
+        // Filter books issued today for the logged-in staff
+        const today = new Date();
+        const issuedBooks = response.data.filter((book) => {
+          const issuedDate = new Date(book.issuedAt);
+          return (
+            book.issuedBy === userId || // Check if the book was issued by this staff member
+            issuedDate.getDate() === today.getDate() &&
+            issuedDate.getMonth() === today.getMonth() &&
+            issuedDate.getFullYear() === today.getFullYear()
+          );
+        });
+
         setBooks(issuedBooks);
         setLoading(false);
-      } catch (error) {
-        setError('Error fetching books: ' + (error.response?.data?.message || error.message));
+      } catch (err) {
+        setError('Error fetching books: ' + (err.response?.data?.message || err.message));
         setLoading(false);
       }
     };
@@ -60,43 +72,6 @@ function Staff_issuedbooks() {
     navigate('/staffpage');
   };
 
-  const calculateFine = (dueDate) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const differenceInTime = today - due;
-    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-    const fine = differenceInDays > 0 ? Math.ceil(differenceInDays) * 2 : 0;
-    return fine > 1000 ? 1000 : fine; // Cap fine at ₹1000
-  };
-
-  const handlePayFine = async (bookId, fine) => {
-    if (fine <= 0) {
-      alert('No fine to pay for this book.');
-      return;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:8080/api/payments', {
-        userId,
-        bookId,
-        amount: fine,
-      });
-
-      if (response && response.status === 200) {
-        alert('Fine paid successfully!');
-        setBooks((prevBooks) =>
-          prevBooks.map((book) =>
-            book._id === bookId ? { ...book, fine: 0 } : book
-          )
-        );
-      } else {
-        throw new Error('Payment failed');
-      }
-    } catch (error) {
-      alert('Error processing payment: ' + error.message);
-    }
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -114,6 +89,7 @@ function Staff_issuedbooks() {
         color: 'white',
       }}
     >
+      {/* Header */}
       <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
         <div className="h-full container mx-auto flex items-center px-4 justify-between">
           <button onClick={handleBack} className="text-white hover:text-gray-200 mr-4">
@@ -133,7 +109,7 @@ function Staff_issuedbooks() {
                 className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
                 onClick={handleProfileClick}
               >
-                <span className="text-white">P</span>
+                <span className="text-white">{name.charAt(0)}</span>
               </div>
             )}
             {isDropdownOpen && (
@@ -154,61 +130,40 @@ function Staff_issuedbooks() {
         </div>
       </header>
 
+      {/* Main Content */}
       <div className="container mx-auto pt-20">
         <h1 className="text-3xl font-bold mb-6 text-center">Staff Issued Books</h1>
-        {books && books.length > 0 ? (
+        {books.length > 0 ? (
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
             <thead className="bg-blue-500 text-white">
               <tr>
                 <th className="px-4 py-2">Title</th>
                 <th className="px-4 py-2">Author</th>
-                <th className="px-4 py-2">Reserved At</th>
                 <th className="px-4 py-2">Issued At</th>
                 <th className="px-4 py-2">Due Date</th>
-                <th className="px-4 py-2">Fine</th>
-                <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => {
-                const fine = calculateFine(book.dueDate);
-                return (
-                  <tr key={book._id} className="text-gray-700">
-                    <td className="border px-4 py-2">{book.title}</td>
-                    <td className="border px-4 py-2">{book.author}</td>
-                    <td className="border px-4 py-2">
-                      {book.reservedAt
-                        ? new Date(book.reservedAt).toLocaleDateString('en-US')
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {book.issuedAt
-                        ? new Date(book.issuedAt).toLocaleDateString('en-US')
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {book.dueDate
-                        ? new Date(book.dueDate).toLocaleDateString('en-US')
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">₹{fine}</td>
-                    <td className="border px-4 py-2">
-                      {fine > 0 && (
-                        <button
-                          onClick={() => handlePayFine(book._id, fine)}
-                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                        >
-                          Pay Fine
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {books.map((book) => (
+                <tr key={book._id} className="text-gray-700">
+                  <td className="border px-4 py-2">{book.title}</td>
+                  <td className="border px-4 py-2">{book.author || 'N/A'}</td>
+                  <td className="border px-4 py-2">
+                    {book.issuedAt
+                      ? new Date(book.issuedAt).toLocaleDateString('en-US')
+                      : 'N/A'}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {book.dueDate
+                      ? new Date(book.dueDate).toLocaleDateString('en-US')
+                      : 'N/A'}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         ) : (
-          <div className="text-center text-white mt-6">No issued books found.</div>
+          <div className="text-center text-white mt-6">No books were issued today.</div>
         )}
       </div>
     </div>

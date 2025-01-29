@@ -37,7 +37,9 @@ const StaffLogin = () => {
     try {
       const response = await axios.post('http://localhost:8080/api/staff-login', { email, password });
       if (response.data.success) {
+        console.log(res.data);
         const { userId, token, name } = response.data;
+         
 
         // Store user data in localStorage
         const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour expiration
@@ -61,16 +63,14 @@ const StaffLogin = () => {
   const handleGoogleLogin = async (response) => {
     try {
       const res = await axios.post('http://localhost:8080/api/googlelogin', { token: response.credential });
-      console.log(res); // Check if the response is as expected
-  
-      if (res.data.success) {
-        const { userId, token, name } = res.data;
-        localStorage.setItem('userId', userId);
-        localStorage.setItem('token', token);
-        localStorage.setItem('name', name);
-  
-        // Ensure that this navigate function is executed
-        console.log('Navigating to staffpage...');
+      console.log(res);
+      if (res.data.status === 1) {
+        localStorage.setItem('userId', res.data.data.userId);
+        localStorage.setItem('name', res.data.data.name);
+        localStorage.setItem('email', res.data.data.email);
+        localStorage.setItem('phone', res.data.data.phone);
+        localStorage.setItem('address', res.data.data.address);
+        
         navigate('/staffpage');
       } else {
         setMessage(res.data.message || 'Google Login Failed');
@@ -80,7 +80,6 @@ const StaffLogin = () => {
       console.error('Google Login Error:', error);
     }
   };
-  
 
   return (
     <div>

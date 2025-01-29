@@ -156,12 +156,12 @@ const StaffPage = () => {
               </Link>
             </li>
             <li className="mb-4">
-              {/* <Link 
+              <Link 
                 to="/history"
                 className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
               >
                 History
-              </Link> */}
+              </Link>
             </li>
           </ul>
         </div>

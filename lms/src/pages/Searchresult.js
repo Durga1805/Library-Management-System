@@ -154,10 +154,10 @@ const SearchResults = () => {
               <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
                 <thead className="bg-gray-200">
                   <tr>
-                    <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('title')}>Title</th>
+                    {/* <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('title')}>Title</th>
                     <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('author')}>Author</th>
                     <th className="py-3 px-6 text-left cursor-pointer" onClick={() => sortResults('status')}>Status</th>
-                    <th className="py-3 px-6 text-center">Action</th>
+                    <th className="py-3 px-6 text-center">Action</th> */}
                   </tr>
                 </thead>
                 <tbody>

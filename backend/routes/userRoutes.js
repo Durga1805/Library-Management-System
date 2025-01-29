@@ -9,6 +9,7 @@ const {
   searchUsers,
   updateUserProfile,
   getUserProfile,
+  googleLogin
 } = require('../controllers/userController');
 // const { forgotPassword, resetPassword } = require('../controllers/forgotPasswordController');
 
@@ -23,6 +24,8 @@ router.post('/upload-csv', upload.single('csvFile'), uploadCSV);
 
 // POST route for login
 router.post('/login', login);
+
+router.post('/google-login', googleLogin);
 
 // GET route for fetching users without password
 router.get('/users', listUsers);

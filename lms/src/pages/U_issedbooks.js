@@ -1,263 +1,168 @@
-// LIBRARY_MANAGEMENT_SYSTEM\lms\src\pages\U_issedbooks.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
-function U_issedbooks() {
+const U_issuedbooks = () => {
   const [books, setBooks] = useState([]);
   const name = localStorage.getItem('name') || 'User';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const userId = localStorage.getItem('userId');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const profilePic = localStorage.getItem('profilePic');
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const profilePic = localStorage.getItem('profilePic') || ''; // Optional profile picture
+
+  
+  const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/books`, {
+        const response = await axios.get('http://localhost:8080/api/books', {
           params: { userId },
+          headers: { Authorization: `Bearer ${token}` }
         });
-
-        const issuedBooks = response.data.filter((book) => book.reserved === userId);
-        setBooks(issuedBooks);
+        setBooks(response.data);
         setLoading(false);
-      } catch (error) {
-        setError('Error fetching books: ' + (error.response?.data?.message || error.message));
+      } catch (err) {
+        setError('Error fetching books: ' + (err.response?.data?.message || err.message));
         setLoading(false);
       }
     };
-
     fetchBooks();
-  }, [userId]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('userId');
-    alert('Logged out successfully');
-    setIsDropdownOpen(false);
-    navigate('/');
-  };
-
-  const handleProfileClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const dropdown = document.getElementById('profileDropdown');
-      if (dropdown && !dropdown.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleBack = () => {
-    navigate('/userpage');
-  };
+  }, [userId, token]);
 
   const calculateFine = (dueDate) => {
-    const today = new Date();
+    const currentDate = new Date();
     const due = new Date(dueDate);
-    const differenceInTime = today - due;
-    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-    const fine = differenceInDays > 0 ? Math.ceil(differenceInDays) * 2 : 0;
-    return fine > 1000 ? 1000 : fine; // Cap fine at ₹1000
+    if (currentDate > due) {
+      const daysLate = Math.ceil((currentDate - due) / (1000 * 60 * 60 * 24));
+      return daysLate * 2;
+    }
+    return 0;
   };
 
-  const handlePayFine = async (bookId, fine) => {
-    if (fine <= 0) {
-      alert('No fine to pay for this book.');
-      return;
-    }
-  
+  const handleReturnClick = (book) => {
+    setSelectedBook(book);
+    setIsModalOpen(true);
+  };
+
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
+
+  const handleConfirmReturn = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/payments', {
-        userId,
-        bookId,
-        amount: fine,
+      const { _id: bookId } = selectedBook;
+      await axios.patch(`http://localhost:8080/api/books/return/${bookId}`, { userId }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-  
-      if (response.status === 200) {
-        const { orderId, amount, currency } = response.data;
-  
-        const options = {
-          key: 'rzp_test_uMGUQEKTOz0D0k', // Replace with your Razorpay Key ID
-          amount: amount,
-          currency: currency,
-          name: 'Library Management System',
-          description: 'Fine Payment',
-          order_id: orderId,
-          handler: function (paymentResponse) {
-            alert('Payment successful!');
-            setBooks((prevBooks) =>
-              prevBooks.map((book) =>
-                book._id === bookId ? { ...book, fine: 0 } : book
-              )
-            );
-          },
-          prefill: {
-            name: localStorage.getItem('name') || 'User',
-            email: 'durgasreenivasan2003@gmail.com',
-            contact: '7561076575',
-          },
-          theme: {
-            color: '#3399cc',
-          },
-        };
-  
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
-      } else {
-        throw new Error('Failed to create Razorpay order');
-      }
+      setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
+      alert('Book returned successfully!');
+      setIsModalOpen(false);
     } catch (error) {
-      alert('Error processing payment: ' + error.message);
+      alert('Error returning the book: ' + error.message);
     }
   };
-  
-  
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  const handleFinePayment = async () => {
+    try {
+      const fineAmount = calculateFine(selectedBook.dueDate);
+      const response = await axios.post('http://localhost:8080/api/payments', {
+        userId, bookId: selectedBook._id, amount: fineAmount
+      });
+      const { orderId } = response.data;
+      
+      const options = {
+        key: 'rzp_test_uMGUQEKTOz0D0k',
+        amount: fineAmount * 100,
+        currency: 'INR',
+        name: 'Library Management',
+        description: `Fine payment for book: ${selectedBook.title}`,
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            await axios.post('http://localhost:8080/api/payments/verify', response);
+            alert('Payment successful! Returning book...');
+            handleConfirmReturn();
+          } catch (error) {
+            alert('Payment verification failed!');
+          }
+        },
+        prefill: { name },
+        theme: { color: '#3399cc' },
+      };
+      
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      alert('Error initiating payment: ' + error.message);
+    }
+  };
 
   return (
     <div
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        minHeight: '100vh',
-        color: 'white',
-      }}
+      style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', minHeight: '100vh', color: 'white' }}
     >
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <button 
-            onClick={handleBack} 
-            className="text-white hover:text-gray-200 mr-4"
-          >
-            &larr; Back
-          </button>
-          <h1 className="text-white text-xl font-bold">LMS</h1>
-          <nav className="flex space-x-4 items-center">
-            <h6 className="text-white hover:text-gray-200">{name}</h6>
-            <div className="relative" id="profileDropdown">
-              {profilePic ? (
-                <img
-                  src={profilePic}
-                  alt="Profile"
-                  onClick={handleProfileClick}
-                  className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
-                  onClick={handleProfileClick}
-                >
-                  <span className="text-white">P</span>
-                </div>
-              )}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                  <ul>
-                    <li>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </nav>
-        </div>
-      </header>
-
       <div className="container mx-auto pt-20">
-        <h1 className="text-3xl font-bold mb-6 text-center">Your Issued Books</h1>
-        {books && books.length > 0 ? (
-          <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
+        <h1 className="text-3xl font-bold mb-6 text-center">Books Issued</h1>
+        {books.length > 0 ? (
+          <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg">
             <thead className="bg-blue-500 text-white">
               <tr>
                 <th className="px-4 py-2">Title</th>
-                <th className="px-4 py-2">Author</th>
-                <th className="px-4 py-2">Reserved At</th>
-                <th className="px-4 py-2">Issued At</th>
+                <th className="px-4 py-2">Issue Date</th>
                 <th className="px-4 py-2">Due Date</th>
                 <th className="px-4 py-2">Fine</th>
-                <th className="px-4 py-2">Actions</th>
+                <th className="px-4 py-2">Action</th>
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => {
-                const fine = calculateFine(book.dueDate);
-                return (
-                  <tr key={book._id} className="text-gray-700">
-                    <td className="border px-4 py-2">{book.title}</td>
-                    <td className="border px-4 py-2">{book.author}</td>
-                    <td className="border px-4 py-2">
-                      {book.reservedAt
-                        ? new Date(book.reservedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {book.issuedAt
-                        ? new Date(book.issuedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {book.dueDate
-                        ? new Date(book.dueDate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
-                        : 'N/A'}
-                    </td>
-                    <td className="border px-4 py-2">₹{fine}</td>
-                    <td className="border px-4 py-2">
-                      {fine > 0 && (
-                        <button
-                          onClick={() => handlePayFine(book._id, fine)}
-                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                        >
-                          Pay Fine
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {books.map((book) => (
+                <tr key={book._id} className="text-gray-700">
+                  <td className="border px-4 py-2">{book.title}</td>
+                  <td className="border px-4 py-2">{new Date(book.issuedAt).toLocaleDateString()}</td>
+                  <td className="border px-4 py-2">{new Date(book.dueDate).toLocaleDateString()}</td>
+                  <td className="border px-4 py-2">₹{calculateFine(book.dueDate)}</td>
+                  <td className="border px-4 py-2">
+                    <button
+                      onClick={() => handleReturnClick(book)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                    >
+                      Return
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         ) : (
-          <div className="text-center text-white mt-6">No issued books found.</div>
+          <div className="text-center text-white mt-6">No books issued.</div>
         )}
       </div>
+      {isModalOpen && selectedBook && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center text-black">
+            <h2 className="font-bold mb-4">Confirm Return</h2>
+            <p>Fine: ₹{calculateFine(selectedBook.dueDate)}</p>
+            {calculateFine(selectedBook.dueDate) > 0 ? (
+              <button onClick={handleFinePayment} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mt-4">Pay Fine Online</button>
+            ) : (
+              <button onClick={handleConfirmReturn} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4">Confirm Return</button>
+            )}
+            <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 mt-4 ml-2">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default U_issedbooks;
+export default U_issuedbooks;

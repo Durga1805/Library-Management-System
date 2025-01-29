@@ -7,7 +7,7 @@ const bookRoutes = require('./routes/bookRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
-
+const chatbotRoutes = require("./routes/chatbotRoutes");
 
 
 
@@ -35,6 +35,7 @@ app.use('/api', bookRoutes);  // Add book routes
 app.use('/api', staffRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api', chatbotRoutes);
 
 
 // Start the server

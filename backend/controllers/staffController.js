@@ -3,6 +3,9 @@
 const Staff = require('../models/Staff');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.googleCLIENT_ID);
+
 
 // Add Staff Controller
 const addStaff = async (req, res) => {
@@ -72,4 +75,32 @@ const loginStaff = async (req, res) => {
   }
 };
 
-module.exports = { addStaff, listStaff, loginStaff };
+const googleLogin = async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ status: 0, message: 'No token provided' });
+  }
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.googleCLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log('User info:', payload); // Log user details to check if it's decoded correctly
+
+    // Your user login/registration logic here...
+
+    return res.status(200).json({
+      status: 1,
+      message: 'Google login successful',
+      data: { userId: payload.sub, name: payload.name, email: payload.email },
+    });
+  } catch (error) {
+    return res.status(400).json({ status: 0, message: 'Invalid token' });
+  }
+};
+
+module.exports = { addStaff, listStaff, loginStaff,googleLogin };

@@ -1,17 +1,18 @@
 import './App.css';
 import { Outlet } from 'react-router-dom';
 import Footer from './components/Footer';
-
-
+import Chatbot from './components/Chatbot'; // Import the Chatbot component
 
 function App() {
   return (
     <>
-    
-      <main >
+      <main>
         <Outlet />
-        
       </main>
+
+      {/* Chatbot */}
+      <Chatbot />
+
       {/* Footer */}
       <Footer />
     </>
@@ -19,5 +20,3 @@ function App() {
 }
 
 export default App;
-
-

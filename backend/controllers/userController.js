@@ -5,6 +5,10 @@ const moment = require('moment');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.googleCLIENT_ID);
+
+
 
 // Function to handle CSV upload and user creation
 const uploadCSV = async (req, res) => {
@@ -101,6 +105,106 @@ const login = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+// const googleLogin = async (req, res) => {
+//   try {
+//     const { token } = req.body;
+
+//     if (!token) {
+//       return res.status(400).json({
+//         status: 0,
+//         message: "No token provided"
+//       });
+//     }
+
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID
+//     });
+
+//     if (ticket && ticket.getPayload() && ticket.getPayload().email) {
+//       const { name, email, picture } = ticket.getPayload();
+//       const userExists = await User.findOne({ email: email });
+
+
+//       if (userExists && userExists.email) {
+//         if (userExists.isFacebookUser || userExists.password) {
+//           return res.status(400).json({
+//             status: 0,
+//             message: "This email is already registered. Please use the appropriate login method."
+//           });
+//         }
+//         return res.json({
+//           status: 1,
+//           message: "Login successful",
+//           data: {
+//             token: generateToken(userExists._id.toString(), userExists.name),
+//             newUser: false
+//           }
+//         });
+//       } else {
+//         const newUser = await new User({
+//           name,
+//           email,
+//           profilePic: picture,
+//           isGoogleUser: true,
+//           selectedMarkets: DEFAULT_MARKET_IDS.map(id => ({ _id: id }))
+//         }).save();
+
+//         return res.json({
+//           status: 1,
+//           message: "User registered and login successful",
+//           data: {
+//             token: generateToken(newUser._id.toString(), newUser.name),
+//             newUser: true
+//           }
+//         });
+//       }
+//     } else {
+//       return res.status(400).json({ status: 0, message: "Invalid token" });
+//     }
+//   } catch (err) {
+//     console.log('Error in validateGoogleToken:', err);
+//     res.status(500).json({
+//       status: 0,
+//       message: "Server error"
+//     });
+//   }
+// }
+
+
+
+
+const googleLogin = async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ status: 0, message: 'No token provided' });
+  }
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.googleCLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log('User info:', payload); // Log user details to check if it's decoded correctly
+
+    // Your user login/registration logic here...
+
+    return res.status(200).json({
+      status: 1,
+      message: 'Google login successful',
+      data: { userId: payload.sub, name: payload.name, email: payload.email },
+    });
+  } catch (error) {
+    return res.status(400).json({ status: 0, message: 'Invalid token' });
+  }
+};
+
+
+
 
 
 // Function to get users without password
@@ -211,5 +315,5 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Error fetching user profile', error: error.message });
   }
 };
-module.exports = { uploadCSV, login, listUsers, updateUserStatus, searchUsers,updateUserProfile,getUserProfile };
+module.exports = { uploadCSV, login, listUsers, updateUserStatus, searchUsers,updateUserProfile,getUserProfile, googleLogin };
 

@@ -1,6 +1,6 @@
 // LIBRARY_MANAGEMENT_SYSTEM\backend\routes\staffRoutes.js
 const express = require('express');
-const { addStaff, listStaff, loginStaff } = require('../controllers/staffController');
+const { addStaff, listStaff, loginStaff,googleLogin } = require('../controllers/staffController');
 // const { forgotPassword, resetPassword } = require('../controllers/forgotPasswordController');
 const router = express.Router();
 
@@ -20,6 +20,7 @@ router.post('/staff-login', loginStaff);
 // // Route for resetting password
 // router.post('/staff/reset-password', resetPassword);
 
+router.post('/googlelogin', googleLogin);
 
 module.exports = router;
 1   
