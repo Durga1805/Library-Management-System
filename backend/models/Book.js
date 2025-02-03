@@ -21,6 +21,7 @@ const bookSchema = new mongoose.Schema({
   
   issuedAt: { type: Date }, 
   dueDate: { type: Date }, // New field for due date
+  returnedAt: { type: Date },
   fine: { type: Number, default: 0 }, // New field for fine
 });
 

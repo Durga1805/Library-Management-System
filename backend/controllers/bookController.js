@@ -218,42 +218,70 @@ const issueBook = async (req, res) => {
 };
 
 
-// Return a book and calculate fine if overdue
-const handleReturnBook = async (req, res) => {
-  const { id } = req.params;
+
+
+// Return Book Function
+const returnBook = async (req, res) => {
   try {
-    const book = await Book.findById(id);
-    if (!book) {
-      return res.status(404).json({ message: 'Book not found.' });
-    }
+      const { bookId } = req.params;
+      const book = await Book.findById(bookId);
 
-    const currentDate = new Date();
-    const dueDate = new Date(book.dueDate);
-    let fine = 0;
+      if (!book) {
+          return res.status(404).json({ message: 'Book not found' });
+      }
 
-    if (currentDate > dueDate) {
-      const daysLate = Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24));
-      fine = daysLate * 2;  // Rs. 2 fine per day
-    }
+      if (book.status !== 'Issued') {
+          return res.status(400).json({ message: 'Book is not issued' });
+      }
 
-    book.status = 'Active';
-    // book.issuedAt = null;
-    // book.dueDate = null;
-    book.fine = fine;
-    await book.save();
+      // Calculate fine (Assuming 2 Rs per day after due date)
+      const dueDate = new Date(book.dueDate);
+      const today = new Date();
+      let fine = 0;
 
-    // Remove book from user's reservedBooks if necessary
-    const user = await User.findOne({ reservedBooks: { $elemMatch: { bookId: book._id } } });
-    if (user) {
-      user.reservedBooks = user.reservedBooks.filter((b) => b.bookId.toString() !== book._id.toString());
-      await user.save();
-    }
+      if (today > dueDate) {
+          const diffTime = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+          fine = diffTime * 2;
+      }
 
-    res.status(200).json({ message: 'Book returned successfully.', fine });
+      return res.status(200).json({ fine });
   } catch (error) {
-    res.status(500).json({ message: 'Error returning book', error: error.message });
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+const confirmPaymentAndReturn = async (req, res) => {
+  try {
+      const { bookId } = req.params;
+      const { paymentSuccess } = req.body;
+
+      if (!paymentSuccess) {
+          return res.status(400).json({ message: 'Payment required' });
+      }
+
+      const book = await Book.findById(bookId);
+      if (!book) {
+          return res.status(404).json({ message: 'Book not found' });
+      }
+
+      // Update book status
+      book.status = 'Active';
+      book.fine = 0;
+      await book.save();
+
+      return res.status(200).json({ message: 'Book returned successfully', fine: 0 });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+
+
+
 
 // Fetch available books
 const getAvailableBooks = async (req, res) => {
@@ -320,6 +348,35 @@ const getHistory = async (req, res) => {
 
 
 
+// Controller for generating report for reserved and issued books
+const generateBookReport = async (req, res) => {
+  try {
+    // Log when the report is being generated
+    console.log("Generating book report...");
+
+    // Fetch all books with status "Reserved" or "Issued"
+    const booksReport = await Book.find({
+      status: { $in: ['Reserved', 'Issued'] }
+    }).lean();  // Using lean() for better performance
+
+    // Format dates and handle user data
+    const formattedReport = booksReport.map(book => ({
+      ...book,
+      reservedBy: book.reservedBy ? { name: book.reservedBy } : null,
+      reservedAt: book.reservedAt || null,
+      issuedAt: book.issuedAt || null,
+      dueDate: book.dueDate || null,
+      fine: book.fine || 0
+    }));
+
+    console.log("Formatted report:", formattedReport);
+    res.status(200).json(formattedReport);
+  } catch (error) {
+    console.error('Error generating report:', error);
+    res.status(500).json({ error: 'An error occurred while generating the report' });
+  }
+};
+
 
 
 
@@ -333,6 +390,8 @@ module.exports = {
   reserveBook,
   cancelReservation,
   issueBook,
-  handleReturnBook,
+  returnBook, // Fixed function export
+  confirmPaymentAndReturn, // Added missing function export
   getHistory,
-};
+  generateBookReport
+  };

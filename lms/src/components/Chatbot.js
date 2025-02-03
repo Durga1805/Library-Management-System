@@ -1,3 +1,4 @@
+// lms\src\components\Chatbot.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -6,8 +7,10 @@ function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
 
-  const toggleChatbot = () => setIsOpen(!isOpen);
-
+  const toggleChatbot = () =>{ 
+    console.log("Chatbot button clicked");
+    setIsOpen(!isOpen);
+  };
   const sendMessage = async () => {
     if (input.trim() === '') return;
 
@@ -47,11 +50,13 @@ function Chatbot() {
   return (
     <>
       <div
-        className="fixed bottom-5 right-5 bg-red-800 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-red-600"
-        onClick={toggleChatbot}
-      >
-        💬
-      </div>
+  className="fixed bottom-5 right-5 bg-red-800 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-red-600"
+  onClick={toggleChatbot}
+  style={{ zIndex: 1000 }} // Higher z-index than WhatsApp button
+>
+  💬
+</div>
+
 
       {isOpen && (
         <div className="fixed bottom-20 right-5 w-80 bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">

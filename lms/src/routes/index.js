@@ -40,6 +40,7 @@ import Staff_updateProfile from '../pages/Staff_updateProfile';
 import S_viewProfile from '../pages/S_viewProfile';
 import BookingPage from '../pages/BookingPage';
 import Chatbot from '../components/Chatbot'; // Adjust the path
+import ReportPage from '../pages/ReportPage';
 
 
 
@@ -208,6 +209,10 @@ const router = createBrowserRouter([
             {
                 path : "/",
                 element: <Chatbot />
+            },
+            {
+                path : "report",
+                element: <ReportPage />
             }
 
         ]

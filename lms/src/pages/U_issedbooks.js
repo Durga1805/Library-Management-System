@@ -3,117 +3,105 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/lms2.jpg';
 
-const U_issuedbooks = () => {
+function U_issuedBooks() {
   const [books, setBooks] = useState([]);
-  const name = localStorage.getItem('name') || 'User';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [fine, setFine] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-  const profilePic = localStorage.getItem('profilePic') || ''; // Optional profile picture
-
   
   const userId = localStorage.getItem('userId');
-  const token = localStorage.getItem('token');
+  const name = localStorage.getItem('name') || 'User';
+  const profilePic = localStorage.getItem('profilePic');
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/books', {
-          params: { userId },
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setBooks(response.data);
+        const response = await axios.get(`http://localhost:8080/api/books?userId=${userId}`); // Fetch only user's books
+        setBooks(response.data || []);
         setLoading(false);
-      } catch (err) {
-        setError('Error fetching books: ' + (err.response?.data?.message || err.message));
+      } catch (error) {
+        setError('Error fetching books');
         setLoading(false);
       }
     };
     fetchBooks();
-  }, [userId, token]);
+  }, [userId]);
 
-  const calculateFine = (dueDate) => {
-    const currentDate = new Date();
-    const due = new Date(dueDate);
-    if (currentDate > due) {
-      const daysLate = Math.ceil((currentDate - due) / (1000 * 60 * 60 * 24));
-      return daysLate * 2;
-    }
-    return 0;
-  };
-
-  const handleReturnClick = (book) => {
-    setSelectedBook(book);
-    setIsModalOpen(true);
-  };
-
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  const handleConfirmReturn = async () => {
+  const handleReturnBook = async (bookId) => {
     try {
-      const { _id: bookId } = selectedBook;
-      await axios.patch(`http://localhost:8080/api/books/return/${bookId}`, { userId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
-      alert('Book returned successfully!');
-      setIsModalOpen(false);
+      const fineResponse = await axios.get(`http://localhost:8080/api/return/${bookId}`);
+      setFine(fineResponse.data.fine);
+      setSelectedBook(bookId);
+      setShowModal(true);
     } catch (error) {
-      alert('Error returning the book: ' + error.message);
+      console.error('Error fetching fine:', error);
+      alert('Error processing book return');
     }
   };
 
-  const handleFinePayment = async () => {
+  const confirmReturn = async () => {
     try {
-      const fineAmount = calculateFine(selectedBook.dueDate);
-      const response = await axios.post('http://localhost:8080/api/payments', {
-        userId, bookId: selectedBook._id, amount: fineAmount
+      const response = await axios.post(`http://localhost:8080/api/return/${selectedBook}/confirm`, {
+        paymentSuccess: fine === 0 ? true : false, 
       });
-      const { orderId } = response.data;
-      
-      const options = {
-        key: 'rzp_test_uMGUQEKTOz0D0k',
-        amount: fineAmount * 100,
-        currency: 'INR',
-        name: 'Library Management',
-        description: `Fine payment for book: ${selectedBook.title}`,
-        order_id: orderId,
-        handler: async (response) => {
-          try {
-            await axios.post('http://localhost:8080/api/payments/verify', response);
-            alert('Payment successful! Returning book...');
-            handleConfirmReturn();
-          } catch (error) {
-            alert('Payment verification failed!');
-          }
-        },
-        prefill: { name },
-        theme: { color: '#3399cc' },
-      };
-      
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      alert(response.data.message);
+      setShowModal(false);
+      setBooks(books.map((book) => (book._id === selectedBook ? { ...book, status: 'Active' } : book)));
     } catch (error) {
-      alert('Error initiating payment: ' + error.message);
+      console.error('Error confirming return:', error);
+      alert('Error processing book return');
     }
   };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedBook(null);
+    setFine(0);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
+  const issuedBooks = books.filter((book) => book.status === 'Issued');
 
   return (
     <div
-      style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', minHeight: '100vh', color: 'white' }}
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        minHeight: '100vh',
+        color: 'white',
+      }}
     >
+      <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
+        <div className="h-full container mx-auto flex items-center px-4 justify-between">
+          <h6 className="text-white text-xl font-bold cursor-pointer" onClick={() => navigate('/userpage')}>
+            Back
+          </h6>
+          <h1 className="text-white text-xl font-bold">LMS</h1>
+          <div className="flex items-center space-x-4">
+            <h6 className="text-white">{name}</h6>
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white">
+                {name.charAt(0)}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto pt-20">
-        <h1 className="text-3xl font-bold mb-6 text-center">Books Issued</h1>
-        {books.length > 0 ? (
+        <h1 className="text-3xl font-bold mb-6 text-center">Your Issued Books</h1>
+        {issuedBooks.length > 0 ? (
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -121,20 +109,20 @@ const U_issuedbooks = () => {
                 <th className="px-4 py-2">Issue Date</th>
                 <th className="px-4 py-2">Due Date</th>
                 <th className="px-4 py-2">Fine</th>
-                <th className="px-4 py-2">Action</th>
+                <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => (
+              {issuedBooks.map((book) => (
                 <tr key={book._id} className="text-gray-700">
                   <td className="border px-4 py-2">{book.title}</td>
                   <td className="border px-4 py-2">{new Date(book.issuedAt).toLocaleDateString()}</td>
                   <td className="border px-4 py-2">{new Date(book.dueDate).toLocaleDateString()}</td>
-                  <td className="border px-4 py-2">₹{calculateFine(book.dueDate)}</td>
+                  <td className="border px-4 py-2">₹{book.fine || 0}</td>
                   <td className="border px-4 py-2">
                     <button
-                      onClick={() => handleReturnClick(book)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                      onClick={() => handleReturnBook(book._id)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
                       Return
                     </button>
@@ -144,25 +132,47 @@ const U_issuedbooks = () => {
             </tbody>
           </table>
         ) : (
-          <div className="text-center text-white mt-6">No books issued.</div>
+          <div className="text-center text-white mt-6">No issued books found.</div>
         )}
       </div>
-      {isModalOpen && selectedBook && (
+
+      {/* Modal for Return Confirmation */}
+      {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center text-black">
             <h2 className="font-bold mb-4">Confirm Return</h2>
-            <p>Fine: ₹{calculateFine(selectedBook.dueDate)}</p>
-            {calculateFine(selectedBook.dueDate) > 0 ? (
-              <button onClick={handleFinePayment} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mt-4">Pay Fine Online</button>
+            {fine > 0 ? (
+              <>
+                <p>You have a fine of ₹{fine}. Please complete payment to return the book.</p>
+                <button
+                  onClick={confirmReturn}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-4"
+                >
+                  Pay & Return
+                </button>
+              </>
             ) : (
-              <button onClick={handleConfirmReturn} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4">Confirm Return</button>
+              <p>Are you sure you want to return this book?</p>
             )}
-            <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 mt-4 ml-2">Cancel</button>
+            <div className="mt-4 flex justify-center space-x-4">
+              <button
+                onClick={confirmReturn}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={closeModal}
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
-};
+}
 
-export default U_issuedbooks;
+export default U_issuedBooks;

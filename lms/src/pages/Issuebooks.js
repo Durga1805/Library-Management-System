@@ -7,81 +7,61 @@ function Issuebooks() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [fine, setFine] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         const response = await axios.get('http://localhost:8080/api/books');
-        setBooks(response.data || []); // Ensure books is an array
+        setBooks(response.data || []);
         setLoading(false);
       } catch (error) {
         setError('Error fetching books');
         setLoading(false);
       }
     };
-
     fetchBooks();
   }, []);
 
-  // Handle book return
+  // Handle return book
   const handleReturnBook = async (bookId) => {
     try {
-      const response = await axios.patch(`http://localhost:8080/api/books/return/${bookId}`);
-      
-      if (response && response.data && response.status === 200) {
-        const { fine } = response.data;
-        
-        // Update the book's status and fine locally
-        const updatedBooks = books.map((book) => 
-          book._id === bookId ? { ...book, status: 'Active', fine } : book
-        );
-        setBooks(updatedBooks);
-        alert(`Book returned successfully. Fine: Rs. ${fine}`);
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const fineResponse = await axios.get(`http://localhost:8080/api/return/${bookId}`);
+      setFine(fineResponse.data.fine);
+      setSelectedBook(bookId);
+      setShowModal(true);
     } catch (error) {
-      console.error("Error:", error.message);
-      alert('Error returning book');
+      console.error('Error fetching fine:', error);
+      alert('Error processing book return');
     }
   };
-  
 
-  // Handle logout function
-  const handleLogout = () => {
-    alert('Logged out successfully');
-    navigate('/');
+  const confirmReturn = async () => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/return/${selectedBook}/confirm`, {
+        paymentSuccess: fine === 0 ? true : false, 
+      });
+      alert(response.data.message);
+      setShowModal(false);
+      setBooks(books.map((book) => (book._id === selectedBook ? { ...book, status: 'Active' } : book)));
+    } catch (error) {
+      console.error('Error confirming return:', error);
+      alert('Error processing book return');
+    }
   };
 
-  // Prevent browser back button
-  useEffect(() => {
-    const preventBack = () => {
-      window.history.forward();
-    };
-    preventBack();
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedBook(null);
+    setFine(0);
+  };
 
-    window.onunload = () => null;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
-    const unloadFunction = () => {
-      preventBack();
-    };
-
-    return () => {
-      window.removeEventListener("onunload", unloadFunction);
-    };
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  // Filter books to only show the ones with status 'Issued'
   const issuedBooks = books.filter((book) => book.status === 'Issued');
 
   return (
@@ -93,70 +73,46 @@ function Issuebooks() {
         color: 'white',
       }}
     >
-      {/* Header Section */}
       <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
         <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <div className='flex items-center'>
-            <h1 className="text-white text-xl font-bold">LMS</h1>
-          </div>
+          <h1 className="text-white text-xl font-bold">LMS</h1>
           <nav className="flex space-x-4">
             <Link to="/Adminpage" className="text-white hover:text-gray-200">Back</Link>
-            <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
+            <button onClick={() => navigate('/')} className="text-white hover:text-gray-200">Logout</button>
           </nav>
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="container mx-auto pt-20">
         <h1 className="text-3xl font-bold mb-6 text-center">Issued Books</h1>
-        {issuedBooks && issuedBooks.length > 0 ? (
+        {issuedBooks.length > 0 ? (
           <table className="table-auto w-full bg-white bg-opacity-90 rounded-lg shadow-lg" border="1" cellPadding="10" cellSpacing="0">
             <thead className="bg-blue-500 text-white">
               <tr>
-
                 <th className="px-4 py-2">Title</th>
                 <th className="px-4 py-2">Author</th>
                 <th className="px-4 py-2">Reserved By</th>
-                <th className="px-4 py-2">Reserved At</th>
                 <th className="px-4 py-2">Issued At</th>
-                <th className="px-4 py-2">Due Date</th> {/* New Due Date Column */}
+                <th className="px-4 py-2">Due Date</th>
                 <th className="px-4 py-2">Action</th>
               </tr>
             </thead>
             <tbody>
               {issuedBooks.map((book) => (
                 <tr key={book._id} className="text-gray-700">
-
                   <td className="border px-4 py-2">{book.title}</td>
                   <td className="border px-4 py-2">{book.author}</td>
                   <td className="border px-4 py-2">{book.reservedBy || 'N/A'}</td>
                   <td className="border px-4 py-2">
-                    {book.reservedAt ? new Date(book.reservedAt).toLocaleDateString('en-US', {
-                      year: 'numeric', 
-                      month: '2-digit', 
-                      day: '2-digit', 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      hour12: true, // Use 12-hour format
-                    }) : 'N/A'}
-                  </td>
-                  <td className="border px-4 py-2">
                     {book.issuedAt ? new Date(book.issuedAt).toLocaleString('en-US', {
-                      year: 'numeric', 
-                      month: '2-digit', 
-                      day: '2-digit', 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      hour12: true, // Use 12-hour format
+                      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true,
                     }) : 'N/A'}
                   </td>
                   <td className="border px-4 py-2">
                     {book.dueDate ? new Date(book.dueDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit'
+                      year: 'numeric', month: '2-digit', day: '2-digit'
                     }) : 'N/A'}
-                  </td> {/* Displaying the Due Date */}
+                  </td>
                   <td className="border px-4 py-2">
                     <button
                       className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -173,6 +129,42 @@ function Issuebooks() {
           <div className="text-center text-white mt-6">No issued books found.</div>
         )}
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-black">
+            <h2 className="text-lg font-bold mb-4">Confirm Return</h2>
+            {fine > 0 ? (
+              <>
+                <p className="text-red-600 font-bold mb-2">Fine: Rs {fine}</p>
+                <p>To return this book, please proceed with the payment.</p>
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full mt-4"
+                  onClick={confirmReturn}
+                >
+                  Pay & Return
+                </button>
+              </>
+            ) : (
+              <>
+                <p>No fine. Do you want to confirm the return?</p>
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full mt-4"
+                  onClick={confirmReturn}
+                >
+                  Confirm Return
+                </button>
+              </>
+            )}
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full mt-2"
+              onClick={closeModal}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

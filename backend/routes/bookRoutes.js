@@ -9,9 +9,11 @@ const {
     cancelReservation,
     updateBookStatus,
     issueBook,
-    handleReturnBook,
+    returnBook, 
+    confirmPaymentAndReturn,
     getAvailableBooks,
     getHistory,
+    generateBookReport
 } = require('../controllers/bookController');
 
 const router = express.Router();
@@ -40,8 +42,8 @@ router.put('/books/:id/status', updateBookStatus);
 router.patch('/books/issue/:id', issueBook);
 
 
-// Route to return a book
-router.patch('/books/return/:id', handleReturnBook);
+router.get('/return/:bookId', returnBook);
+router.post('/return/:bookId/confirm', confirmPaymentAndReturn);
 
 
 // Route to fetch available books
@@ -49,6 +51,10 @@ router.get('/books/available', getAvailableBooks);
 
 // GET route for user history
 router.get('/books/history', getHistory);
+
+
+// Route to generate the book reservation and issue report
+router.get('/books/report', generateBookReport);
 
 
 module.exports = router;
