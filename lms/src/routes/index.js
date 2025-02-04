@@ -41,6 +41,7 @@ import S_viewProfile from '../pages/S_viewProfile';
 import BookingPage from '../pages/BookingPage';
 import Chatbot from '../components/Chatbot'; // Adjust the path
 import ReportPage from '../pages/ReportPage';
+import S_History from '../pages/S_History';
 
 
 
@@ -213,6 +214,10 @@ const router = createBrowserRouter([
             {
                 path : "report",
                 element: <ReportPage />
+            },
+            {
+                path : "staffhistory",
+                element: <S_History />
             }
 
         ]

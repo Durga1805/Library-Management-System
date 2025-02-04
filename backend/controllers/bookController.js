@@ -217,9 +217,6 @@ const issueBook = async (req, res) => {
   }
 };
 
-
-
-
 // Return Book Function
 const returnBook = async (req, res) => {
   try {
@@ -277,12 +274,6 @@ const confirmPaymentAndReturn = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 // Fetch available books
 const getAvailableBooks = async (req, res) => {
   try {
@@ -293,12 +284,9 @@ const getAvailableBooks = async (req, res) => {
   }
 };
 
-
-
-
 const getHistory = async (req, res) => {
   const { userId } = req.query;
-  console.log('History request received');
+  console.log('History request received for user:', userId);
 
   try {
     // Check if user exists in User or Staff collection
@@ -311,42 +299,75 @@ const getHistory = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Compile user activity history
-    const reservedBooks = user.reservedBooks.map((book) => ({
-      title: book.title,
-      type: 'Reserved',
-      date: book.reservedAt,
-    }));
+    // Find all books associated with this user
+    const books = await Book.find({
+      $or: [
+        { reserved: userId },
+        { issuedBy: userId }
+      ]
+    });
 
-    const issuedBooks = await Book.find({ reserved: userId, status: 'Issued' });
-    const issuedHistory = issuedBooks.map((book) => ({
-      title: book.title,
-      type: 'Issued',
-      date: book.issuedAt,
-      fine: book.fine || 0,
-    }));
+    // Create history entries with full book details
+    const history = books.map(book => {
+      const entries = [];
 
-    const returnedBooks = await Book.find({ reserved: userId, status: 'Returned' });
-    const returnedHistory = returnedBooks.map((book) => ({
-      title: book.title,
-      type: 'Returned',
-      date: book.returnedAt,
-      fine: book.fine || 0,
-    }));
+      // Add reservation entry if applicable
+      if (book.reservedAt) {
+        entries.push({
+          title: book.title,
+          author: book.author,
+          accno: book.accno,
+          type: 'Reserved',
+          date: book.reservedAt,
+          dueDate: null,
+          fine: 0,
+          status: book.status
+        });
+      }
 
-    const history = [...reservedBooks, ...issuedHistory, ...returnedHistory];
-    res.status(200).json(history);
+      // Add issue entry if applicable
+      if (book.issuedAt) {
+        entries.push({
+          title: book.title,
+          author: book.author,
+          accno: book.accno,
+          type: 'Issued',
+          date: book.issuedAt,
+          dueDate: book.dueDate,
+          fine: book.fine || 0,
+          status: book.status
+        });
+      }
 
-    // Optionally, store each action in the History model
-    // await History.create({ userId, action: 'Viewed History', timestamp: new Date() });
+      // Add return entry if applicable
+      if (book.returnedAt) {
+        entries.push({
+          title: book.title,
+          author: book.author,
+          accno: book.accno,
+          type: 'Returned',
+          date: book.returnedAt,
+          dueDate: book.dueDate,
+          fine: book.fine || 0,
+          status: 'Returned'
+        });
+      }
+
+      return entries;
+    });
+
+    // Flatten the array and sort by date
+    const flatHistory = history
+      .flat()
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.status(200).json(flatHistory);
 
   } catch (error) {
+    console.error('Error fetching history:', error);
     res.status(500).json({ message: 'Error fetching history.', error: error.message });
   }
 };
-
-
-
 
 // Controller for generating report for reserved and issued books
 const generateBookReport = async (req, res) => {
@@ -377,10 +398,6 @@ const generateBookReport = async (req, res) => {
   }
 };
 
-
-
-
-
 module.exports = {
   uploadBooksCSV,
   listBooks,
@@ -390,8 +407,8 @@ module.exports = {
   reserveBook,
   cancelReservation,
   issueBook,
-  returnBook, // Fixed function export
-  confirmPaymentAndReturn, // Added missing function export
+  returnBook,
+  confirmPaymentAndReturn,
   getHistory,
   generateBookReport
-  };
+};

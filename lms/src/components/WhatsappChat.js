@@ -6,7 +6,7 @@ const WhatsappChat = () => {
   return (
     <div className="whatsapp-chat">
       <a
-        href="https://web.whatsapp.com/send?phone=919495980442" // Replace with your phone number
+        href="https://web.whatsapp.com/send?phone=917561076575" // Replace with your phone number
         className="whatsapp-button"
         id="whatsappButton"
         target="_blank" // Opens WhatsApp in a new tab
