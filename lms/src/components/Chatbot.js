@@ -54,7 +54,7 @@ function Chatbot() {
   onClick={toggleChatbot}
   style={{ zIndex: 1000 }} // Higher z-index than WhatsApp button
 >
-  💬
+Ask me💬
 </div>
 
 
