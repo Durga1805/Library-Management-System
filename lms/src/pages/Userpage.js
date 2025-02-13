@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import userImage from '../assets/user.jpg'; // Import the background image
+import { FaBars, FaBook, FaUser, FaHistory, FaSignOutAlt, FaUserCircle, FaNewspaper } from 'react-icons/fa';
+import { handleLogout } from '../utils/auth';
+import Header from '../components/Header';
+import BookRecommendations from '../components/BookRecommendations';
+
 
 const UserPage = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   
   // Retrieve user details from local storage
@@ -11,7 +17,6 @@ const UserPage = () => {
   const phone = localStorage.getItem('phone') || 'No Phone';
   const profilePic = localStorage.getItem('profilePic') || ''; // Optional profile picture
   
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to toggle dropdown
   const dropdownRef = useRef(null); // Reference to detect click outside dropdown
 
   // Prevent back navigation
@@ -34,14 +39,14 @@ const UserPage = () => {
 
   // Handle dropdown toggle
   const handleProfileClick = () => {
-    setIsDropdownOpen(!isDropdownOpen); // Toggle dropdown
+    setIsProfileDropdownOpen(!isProfileDropdownOpen); // Toggle dropdown
   };
 
   // Handle click outside dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false); // Close dropdown if clicked outside
+        setIsProfileDropdownOpen(false); // Close dropdown if clicked outside
       }
     };
 
@@ -51,131 +56,136 @@ const UserPage = () => {
     };
   }, [dropdownRef]);
 
-  const handleLogout = () => {
-    // Clear all relevant user data from local storage
-    localStorage.removeItem('name');
-    localStorage.removeItem('address');
-    localStorage.removeItem('phone');
-    localStorage.removeItem('profilePic'); // Optional: Clear profilePic if desired
-    localStorage.removeItem('userId');
-    localStorage.removeItem('token');
-    navigate('/'); // Redirect to the login page after logging out
+  const handleLogoutClick = () => {
+    handleLogout(navigate);
   };
 
   return (
-    <div>
-      {/* Header Section */}
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <div className='flex items-center'>
-            <h1 className="text-white text-xl font-bold">LMS</h1>
-          </div>
-          <nav className="flex space-x-4 items-center">
-          <h6 className="text-white hover:text-gray-200">{name ? name : 'User'}</h6>
-            {/* Profile Picture with Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              {profilePic ? (
-                <img 
-                  src={profilePic} 
-                  alt="Profile" 
-                  onClick={handleProfileClick} // Toggle dropdown on click
-                  className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                />
-              ) : (
-                <div 
-                  className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
-                  onClick={handleProfileClick} // Toggle dropdown on click
-                >
-                  <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white">
-                  {name.charAt(0)}
-                </div>
-                </div>
-              )}
-
-              {/* Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                  <ul>
-                    {/* <li>
-                      <Link
-                        to="/edit-user-details" // Route for editing user details
-                        className="block px-4 py-2 text-black hover:bg-gray-200"
-                      >
-                        Edit Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/view-profile" // Route for viewing profile
-                        className="block px-4 py-2 text-black hover:bg-gray-200"
-                      >
-                        View Profile
-                      </Link>
-                    </li> */}
-                    <li>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content Section */}
-      <div 
-        className="flex items-center justify-center min-h-screen bg-cover bg-center" 
-        style={{
-          backgroundImage: `url(${userImage})`, // Use imported image
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left">
-          <h2 className="text-2xl mb-4 text-black">Welcome, {name}</h2> {/* Display the user's name */}
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4">
+        <h1 className="text-2xl font-bold text-center">LMS</h1>
+        <nav className="flex flex-col space-y-3">
+        
+          {/* View Books */}
           
-          <ul>
-            <li className="mb-4">
-              <Link 
-                to="/userch"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Search Books
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link 
-                to="/issued-books" // Route for issued books
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Issued Books
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link 
-                to="/feedback" // Route for feedback
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Feedback
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link 
-                to="/history" // Route for history
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                History
-              </Link>
-            </li>
-          </ul>
-        </div>
+          <Link 
+            to="/view-books" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaBook className="mr-2" />
+            View Books
+          </Link>
+
+          {/* My Borrowed Books */}
+          <Link 
+            to="/my-borrowed-books" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaHistory className="mr-2" />
+            My Borrowed Books
+          </Link>
+
+          {/* Profile Settings */}
+          <Link 
+            to="/studentprofile" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaUser className="mr-2" />
+            Profile Settings
+          </Link>
+          <Link 
+            to="/my-history" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaHistory className="mr-2" />
+            My History
+          </Link>
+          <Link 
+            to="/student-newspaper" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaNewspaper className="mr-2" />
+            Newspaper
+          </Link>
+          <Link 
+            to="/book-request" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaBook className="mr-2" />
+            Request Book
+          </Link>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="flex-1 flex flex-col">
+        <Header title="Student Dashboard" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Quick Access Cards */}
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link to="/view-books" className="flex flex-col items-center">
+                  <FaBook className="text-4xl text-blue-500 mb-4" />
+                  <h3 className="text-xl font-semibold">Browse Books</h3>
+                  <p className="text-gray-600 text-center mt-2">
+                    Search and view available books in the library
+                  </p>
+                </Link>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link to="/my-borrowed-books" className="flex flex-col items-center">
+                  <FaHistory className="text-4xl text-green-500 mb-4" />
+                  <h3 className="text-xl font-semibold">My Borrowed Books</h3>
+                  <p className="text-gray-600 text-center mt-2">
+                    View your currently borrowed books and history
+                  </p>
+                </Link>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link to="/studentprofile" className="flex flex-col items-center">
+                  <FaUser className="text-4xl text-purple-500 mb-4" />
+                  <h3 className="text-xl font-semibold">Profile Settings</h3>
+                  <p className="text-gray-600 text-center mt-2">
+                    Update your profile and preferences
+                  </p>
+                </Link>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link to="/student-newspaper" className="flex flex-col items-center">
+                  <FaNewspaper className="text-4xl text-purple-500 mb-4" />
+                  <h3 className="text-xl font-semibold">Newspaper</h3>
+                  <p className="text-gray-600 text-center mt-2">
+                    Read and download newspapers
+                  </p>
+                </Link>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <Link to="/book-request" className="flex flex-col items-center">
+                  <FaBook className="text-4xl text-blue-500 mb-4" />
+                  <h3 className="text-xl font-semibold">Request Book</h3>
+                  <p className="text-gray-600 text-center mt-2">
+                    Request a new book from the library
+                  </p>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <BookRecommendations />
+            </div>
+          </div>
+        </main>
       </div>
+    </div>
     </div>
   );
 };

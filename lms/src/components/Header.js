@@ -1,77 +1,70 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
+import { handleLogout } from '../utils/auth';
+import axiosInstance from '../utils/axiosConfig';
+import Notifications from './Notifications';
 
-function Header({ name = 'User' }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const Header = ({ title }) => {
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
-  const profilePic = ''; // Replace with dynamic logic if needed.
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [profilePic, setProfilePic] = useState(null);
+  const [userName, setUserName] = useState('');
 
-  const handleProfileClick = () => {
-    setIsDropdownOpen((prev) => !prev);
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login'); // Redirect to login page
-  };
-
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+  useEffect(() => {
+    fetchUserProfile();
   }, []);
 
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axiosInstance.get('/api/users/profile');
+      setUserName(response.data.name);
+      if (response.data.profilePic) {
+        setProfilePic(`http://localhost:8080${response.data.profilePic}`);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
   return (
-    <header className="h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40">
-      <div className="h-full container mx-auto flex items-center px-4 justify-between">
-        <div className="flex items-center">
-          <h1 className="text-white text-xl font-bold">LMS</h1>
-        </div>
-        <nav className="flex space-x-4 items-center">
-          <h6 className="text-white hover:text-gray-200">{name}</h6>
-          <div className="relative" ref={dropdownRef}>
+    <header className="h-16 bg-gradient-to-r from-blue-500 to-red-700 flex items-center justify-between px-6 shadow-lg">
+      <div className="flex items-center">
+       
+        <h1 className="text-white text-xl font-bold ml-4">{title}</h1>
+      </div>
+
+      <div className="flex items-center space-x-4 relative">
+        <span className="text-white">{userName}</span>
+        <div className="relative" onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}>
+          <button className="flex items-center focus:outline-none">
             {profilePic ? (
-              <img
-                src={profilePic}
-                alt="Profile"
-                onClick={handleProfileClick}
-                className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              <img 
+                src={profilePic} 
+                alt="Profile" 
+                className="w-10 h-10 rounded-full object-cover border-2 border-white"
               />
             ) : (
-              <div
-                className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
-                onClick={handleProfileClick}
+              <FaUserCircle className="w-10 h-10 text-white" />
+            )}
+          </button>
+
+          {isProfileDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              
+              <button
+                onClick={() => handleLogout(navigate)}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                <span className="text-white">P</span>
-              </div>
-            )}
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                <ul>
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        </nav>
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+        <Notifications />
       </div>
     </header>
   );
-}
+};
 
 export default Header;

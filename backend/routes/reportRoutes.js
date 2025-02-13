@@ -1,10 +1,9 @@
-// // backend/routes/reportRoutes.js
+const express = require('express');
+const router = express.Router();
+const reportController = require('../controllers/reportController');
+const auth = require('../middleware/auth');
 
-// const express = require('express');
-// const router = express.Router();
-// const { getReports } = require('../controllers/reportController');
+router.get('/statistics', auth, reportController.getStatistics);
+router.get('/user-activities', auth, reportController.getUserActivities);
 
-// // Route to fetch report data
-// router.get('/reports', getReports);
-
-// module.exports = router;
+module.exports = router; 

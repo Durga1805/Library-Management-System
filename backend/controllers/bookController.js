@@ -1,414 +1,677 @@
-// backend\controllers\bookController.js
-
 const Book = require('../models/Book');
+const BookActivity = require('../models/BookActivity');
 const User = require('../models/User');
-const Staff = require('../models/Staff');
-const History = require('../models/History');
-const csv = require('csv-parser');
-const fs = require('fs');
-const mongoose = require('mongoose');
+const { sendBookIssuedEmail, sendBookReturnedEmail } = require('../utils/emailService');
+const { createNotification } = require('./notificationController');
+const Notification = require('../models/Notification');
 
-// Function to upload books from a CSV file
-const uploadBooksCSV = async (req, res) => {
-  const results = [];
-  const file = req.file;
+// Get the next accession number
+const getNextAccessionNo = async () => {
+  const lastBook = await Book.findOne().sort({ accession_no: -1 });
+  return lastBook ? lastBook.accession_no + 1 : 1;
+};
 
-  if (!file) {
-    return res.status(400).json({ message: 'No file uploaded.' });
-  }
+// Add this constant for valid departments
+const VALID_DEPARTMENTS = [
+  'CSE',
+  'IT',
+  'MCA',
+  'Mathematics',
+  'Novel-ML',
+  'Novel-EN',
+  'Story-EN',
+  'Story-ML',
+  'Travelogue-ML',
+  'Travelogue-EN',
+  'Poem-ML',
+  'Poem-EN',
+  'Autobiography-ML',
+  'Autobiography-EN'
+];
 
+// Upload books from CSV
+exports.uploadBooks = async (req, res) => {
   try {
-    // Read CSV file
-    fs.createReadStream(file.path)
-      .pipe(csv())
-      .on('data', (data) => {
-        results.push(data);
-      })
-      .on('end', async () => {
-        const duplicates = [];
-        const booksToAdd = [];
+    const { books } = req.body;
+    console.log('Received books data:', books);
 
-        // Iterate over the parsed CSV data
-        for (let row of results) {
-          const { accno, isbn } = row;
-
-          // Check if the book already exists based on accno or isbn
-          const existingBook = await Book.findOne({ 
-            $or: [{ accno }, { isbn }] 
-          });
-
-          if (existingBook) {
-            // If a duplicate is found, add it to the duplicates array
-            duplicates.push({ title: row.title, accno, isbn });
-          } else {
-            // If no duplicate, create a new book object
-            const newBook = new Book({
-              accno: row.accno,
-              call_no: row.call_no,
-              title: row.title,
-              year_of_publication: parseInt(row.year_of_publication, 10),
-              author: row.author,
-              publisher: row.publisher,
-              isbn: row.isbn,
-              no_of_pages: parseInt(row.no_of_pages, 10),
-              price: parseFloat(row.price),
-              dept: row.dept,
-              cover_type: row.cover_type,
-              status: row.status,
-            });
-            booksToAdd.push(newBook);
-          }
-        }
-
-        // Save all the books that are not duplicates
-        if (booksToAdd.length > 0) {
-          await Book.insertMany(booksToAdd);
-        }
-
-        res.status(201).json({
-          message: 'CSV processed successfully.',
-          addedBooks: booksToAdd.length,
-          duplicates: duplicates.length,
-          duplicateEntries: duplicates, // Provide detailed duplicate information
-        });
+    if (!Array.isArray(books) || books.length === 0) {
+      return res.status(400).json({
+        message: 'Invalid data format',
+        error: 'No valid data found in CSV'
       });
-  } catch (error) {
-    res.status(500).json({ message: 'Error processing CSV file', error: error.message });
-  }
-};
-
-// Function to list all books
-const listBooks = async (req, res) => {
-  try {
-    const books = await Book.find();
-    res.status(200).json(books);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching books', error: error.message });
-  }
-};
-
-// Function to search books
-const searchBooks = async (req, res) => {
-  const { type, query } = req.query;
-  const searchCriteria = {};
-  searchCriteria[type] = { $regex: query, $options: 'i' }; // Case-insensitive search
-
-  try {
-    const books = await Book.find(searchCriteria);
-    res.status(200).json(books);
-  } catch (error) {
-    res.status(500).json({ message: 'Error searching for books', error: error.message });
-  }
-};
-
-// Function to update the status of a book
-const updateBookStatus = async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  if (!status || !['Active', 'Deactive', 'Reserved'].includes(status)) {
-    return res.status(400).json({ message: 'Invalid status. Must be Active, Deactive, or Reserved.' });
-  }
-
-  try {
-    const updatedBook = await Book.findByIdAndUpdate(id, { status }, { new: true });
-
-    if (!updatedBook) {
-      return res.status(404).json({ message: 'Book not found.' });
     }
 
-    res.status(200).json({ message: 'Book status updated successfully.', book: updatedBook });
+    const processedBooks = [];
+    const errors = [];
+    let nextAccessionNo = await getNextAccessionNo();
+
+    // Use VALID_DEPARTMENTS instead of schema path
+    for (const book of books) {
+      try {
+        // Clean the data
+        const cleanedBook = Object.keys(book).reduce((acc, key) => {
+          acc[key] = typeof book[key] === 'string' ? book[key].trim() : book[key];
+          return acc;
+        }, {});
+
+        // Validate required fields
+        const requiredFields = [
+          'title', 
+          'author', 
+          'publisher', 
+          'isbn', 
+          'year_of_publication',
+          'no_of_pages', 
+          'price', 
+          'dept', 
+          'cover_type'
+        ];
+        
+        const missingFields = requiredFields.filter(field => !cleanedBook[field]);
+        if (missingFields.length > 0) {
+          errors.push(`Missing required fields: ${missingFields.join(', ')} for book: ${cleanedBook.title}`);
+          continue;
+        }
+
+        // Validate department
+        if (!VALID_DEPARTMENTS.includes(cleanedBook.dept)) {
+          errors.push(`Invalid department "${cleanedBook.dept}" for book: ${cleanedBook.title}. Valid departments are: ${VALID_DEPARTMENTS.join(', ')}`);
+          continue;
+        }
+
+        // Create multiple copies if specified
+        const copies = parseInt(cleanedBook.copies) || 1;
+        const call_no = `${cleanedBook.dept}-${cleanedBook.isbn}`;
+
+        for (let i = 0; i < copies; i++) {
+          const bookData = {
+            title: cleanedBook.title,
+            author: cleanedBook.author,
+            publisher: cleanedBook.publisher,
+            isbn: cleanedBook.isbn,
+            year_of_publication: parseInt(cleanedBook.year_of_publication),
+            no_of_pages: parseInt(cleanedBook.no_of_pages),
+            price: parseFloat(cleanedBook.price),
+            dept: cleanedBook.dept,
+            cover_type: cleanedBook.cover_type,
+            accession_no: nextAccessionNo++,
+            call_no: call_no,
+            status: 'Available',
+            reserved: 'No'
+          };
+
+          processedBooks.push(bookData);
+        }
+
+      } catch (error) {
+        console.error('Error processing book:', error);
+        errors.push(`Error processing book: ${error.message}`);
+      }
+    }
+
+    if (processedBooks.length === 0) {
+      return res.status(400).json({
+        message: 'No valid books to add',
+        errors
+      });
+    }
+
+    const result = await Book.insertMany(processedBooks);
+
+    // Create notification for each new book
+    try {
+      for (const book of result) {
+        await createNotification(book); // This will handle all user notifications
+      }
+    } catch (notificationError) {
+      console.error('Error creating notifications:', notificationError);
+    }
+
+    res.status(201).json({
+      message: `Successfully added ${result.length} books`,
+      errors: errors.length > 0 ? errors : undefined,
+      books: result
+    });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error updating book status', error: error.message });
+    console.error('Error uploading books:', error);
+    res.status(400).json({
+      message: 'Error uploading books',
+      error: error.message,
+      details: error.errors
+    });
   }
 };
 
-// Function to reserve a book
-const reserveBook = async (req, res) => {
-  const { bookId } = req.params;
-  const { userId } = req.body;
+// Get CSV template
+exports.getCSVTemplate = (req, res) => {
+  const template = {
+    headers: [
+      'title',
+      'author', 
+      'publisher',
+      'isbn',
+      'year_of_publication',
+      'no_of_pages',
+      'price',
+      'dept',
+      'cover_type',
+      'copies'
+    ],
+    sampleRow: {
+      title: 'Sample Book',
+      author: 'John Doe',
+      publisher: 'Sample Publisher',
+      isbn: '9780123456789',
+      year_of_publication: '2023',
+      no_of_pages: '200',
+      price: '29.99',
+      dept: 'CSE', // Can be CSE/IT/MCA/Mathematics/Novel-ML/etc.
+      cover_type: 'Hardcover',
+      copies: '1'
+    }
+  };
+  
+  // Add valid departments list to help users
+  template.validDepartments = [
+    'CSE',
+    'IT',
+    'MCA',
+    'Mathematics',
+    'Novel-ML',
+    'Novel-EN',
+    'Story-EN',
+    'Story-ML',
+    'Travelogue-ML',
+    'Travelogue-EN',
+    'Poem-ML',
+    'Poem-EN',
+    'Autobiography-ML',
+    'Autobiography-EN'
+  ];
+  
+  res.status(200).json(template);
+};
 
+// Add or update the search functionality in bookController.js
+exports.getAllBooks = async (req, res) => {
   try {
+    const { search, dept } = req.query;
+    console.log('Search query:', search, 'Department:', dept); // Debug log
+
+    let query = {};
+
+    // Add search conditions
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { author: { $regex: search, $options: 'i' } },
+        { isbn: { $regex: search, $options: 'i' } },
+        { call_no: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Add department filter
+    if (dept && dept !== 'all') {
+      query.dept = dept;
+    }
+
+    console.log('MongoDB query:', query); // Debug log
+
+    const books = await Book.find(query);
+    console.log(`Found ${books.length} books`); // Debug log
+
+    res.json(books);
+  } catch (error) {
+    console.error('Error searching books:', error);
+    res.status(500).json({
+      message: 'Error searching books',
+      error: error.message
+    });
+  }
+};
+
+exports.reserveBook = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const userId = req.user._id;
+    console.log('Reserving book:', bookId, 'for user:', userId);
+
     const book = await Book.findById(bookId);
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    if (book.status === 'Reserved') {
-      return res.status(400).json({ message: 'Book already reserved' });
+    if (book.status !== 'Available') {
+      return res.status(400).json({ message: 'Book is not available for reservation' });
     }
 
-    let user = await User.findOne({ userid: userId });
-    if (!user) {
-      user = await Staff.findOne({ userid: userId });
+    // Update book status
+    book.status = 'Reserved';
+    book.reservedBy = userId;
+    book.reservedAt = new Date();
+    book.reserved = 'Yes';
+    
+    const savedBook = await book.save();
+    
+    // Create activity record
+    const activity = new BookActivity({
+      userId: userId,
+      bookId: book._id,
+      type: 'reserve',
+      timestamp: new Date()
+    });
+    await activity.save();
+
+    console.log('Book reserved successfully:', savedBook);
+
+    res.json({ 
+      message: 'Book reserved successfully',
+      book: savedBook
+    });
+
+  } catch (error) {
+    console.error('Error reserving book:', error);
+    res.status(500).json({
+      message: 'Error reserving book',
+      error: error.message
+    });
+  }
+};
+
+exports.cancelReservation = async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
     }
 
+    if (book.status !== 'Reserved' || !book.reservedBy || 
+        book.reservedBy.toString() !== req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot cancel this reservation' });
+    }
+
+    // Update book status to Available (not Active)
+    book.status = 'Available';  // Changed from 'Active' to 'Available'
+    book.reservedBy = null;
+    book.reservedAt = null;
+    book.reserved = 'No';
+    
+    await book.save();
+
+    // Create activity record
+    const activity = new BookActivity({
+      userId: req.user._id,
+      bookId: book._id,
+      type: 'reserve',
+      timestamp: new Date()
+    });
+    await activity.save();
+
+    res.json({ message: 'Reservation cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling reservation:', error);
+    res.status(500).json({ message: 'Error cancelling reservation' });
+  }
+};
+
+// Get user's books
+exports.getMyBooks = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log('Fetching books for user:', userId);
+
+    const reservedBooks = await Book.find({
+      reservedBy: userId,
+      status: 'Reserved'
+    });
+    console.log('Reserved books found:', reservedBooks);
+
+    const issuedBooks = await Book.find({
+      issuedTo: userId,
+      status: 'Issued'
+    });
+    console.log('Issued books found:', issuedBooks);
+
+    res.json({
+      reserved: reservedBooks,
+      issued: issuedBooks
+    });
+
+  } catch (error) {
+    console.error('Error fetching user books:', error);
+    res.status(500).json({
+      message: 'Error fetching your books',
+      error: error.message
+    });
+  }
+};
+
+// Return book
+exports.returnBook = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const book = await Book.findById(bookId).populate('issuedTo');
+    
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    if (book.status !== 'Issued') {
+      return res.status(400).json({ message: 'Book is not issued' });
+    }
+
+    // Calculate fine if book is overdue
+    let fine = 0;
+    if (book.dueDate && new Date(book.dueDate) < new Date()) {
+      const daysOverdue = Math.ceil(
+        (new Date() - new Date(book.dueDate)) / (1000 * 60 * 60 * 24)
+      );
+      fine = daysOverdue * 5; // ₹5 per day
+    }
+
+    // Store user details before updating book
+    const user = book.issuedTo;
+    const bookDetails = {
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      call_no: book.call_no,
+      fine: fine
+    };
+
+    if (fine === 0) {
+      // If no fine, complete return immediately
+      book.status = 'Available';
+      book.issuedTo = null;
+      book.issuedAt = null;
+      book.dueDate = null;
+      await book.save();
+
+      // Create return activity record
+      const activity = new BookActivity({
+        userId: user._id,
+        bookId: book._id,
+        type: 'return',
+        fine: 0
+      });
+      await activity.save();
+
+      // Send email notification
+      await sendBookReturnedEmail(
+        user.email,
+        user.name,
+        bookDetails
+      );
+
+      res.json({ 
+        message: 'Book returned successfully',
+        fine: 0 
+      });
+    } else {
+      // If there's a fine, mark it but don't complete return
+      book.fine = fine;
+      await book.save();
+      
+      res.json({ 
+        message: 'Book has pending fine',
+        fine: fine,
+        requiresPayment: true
+      });
+    }
+  } catch (error) {
+    console.error('Error returning book:', error);
+    res.status(500).json({ message: 'Error returning book' });
+  }
+};
+
+// Pay fine
+exports.payFine = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const book = await Book.findById(bookId).populate('issuedTo');
+    
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    // Store user details before updating book
+    const user = book.issuedTo;
+    const bookDetails = {
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      call_no: book.call_no,
+      fine: book.fine
+    };
+
+    // Update book status
+    book.status = 'Available';
+    book.issuedTo = null;
+    book.issuedAt = null;
+    book.dueDate = null;
+    const fine = book.fine;
+    book.fine = 0;
+    
+    await book.save();
+
+    // Create return activity record
+    const activity = new BookActivity({
+      userId: user._id,
+      bookId: book._id,
+      type: 'return',
+      fine: fine
+    });
+    await activity.save();
+
+    // Send email notification
+    await sendBookReturnedEmail(
+      user.email,
+      user.name,
+      bookDetails
+    );
+
+    res.json({ message: 'Fine paid and book returned successfully' });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    res.status(500).json({ message: 'Error processing payment' });
+  }
+};
+
+exports.getStatistics = async (req, res) => {
+  try {
+    const totalBooks = await Book.countDocuments();
+    const issuedBooks = await Book.countDocuments({ status: 'Issued' });
+    const dueReturns = await Book.countDocuments({
+      status: 'Issued',
+      dueDate: { $lt: new Date() }
+    });
+
+    res.json({
+      totalBooks,
+      issuedBooks,
+      dueReturns
+    });
+  } catch (error) {
+    console.error('Error fetching statistics:', error);
+    res.status(500).json({ message: 'Error fetching statistics' });
+  }
+};
+
+exports.getRecentActivities = async (req, res) => {
+  try {
+    const activities = await BookActivity.find()
+      .sort({ timestamp: -1 })
+      .limit(10)
+      .populate('userId', 'name')
+      .populate('bookId', 'title');
+
+    const formattedActivities = activities.map(activity => ({
+      _id: activity._id,
+      type: activity.type,
+      description: `${activity.userId.name} ${activity.type}d "${activity.bookId.title}"`,
+      timestamp: activity.timestamp
+    }));
+
+    res.json(formattedActivities);
+  } catch (error) {
+    console.error('Error fetching recent activities:', error);
+    res.status(500).json({ message: 'Error fetching recent activities' });
+  }
+};
+
+// Add these controller methods
+exports.getReservations = async (req, res) => {
+  try {
+    const reservations = await Book.find({ status: 'Reserved' })
+      .populate('reservedBy', 'name userid dept')
+      .sort({ reservedAt: -1 });
+
+    const formattedReservations = reservations.map(book => ({
+      _id: book._id,
+      book: {
+        _id: book._id,
+        title: book.title,
+        isbn: book.isbn,
+        call_no: book.call_no
+      },
+      user: book.reservedBy,
+      reservedAt: book.reservedAt
+    }));
+
+    res.json(formattedReservations);
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    res.status(500).json({ message: 'Error fetching reservations' });
+  }
+};
+
+exports.issueBook = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    const { userId, dueDate } = req.body;
+
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    // Get user details for email
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    book.status = 'Reserved';
-    book.reservedBy = user.name;
-    book.reserved = userId;
-    book.reservedAt = new Date();
-    await book.save();
-
-    user.reservedBooks.push({ bookId: book._id, reservedAt: new Date() });
-    await user.save();
-
-    res.status(200).json({ message: 'Book reserved successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error reserving the book', error: error.message });
-  }
-};
-
-// Function to cancel reservation
-const cancelReservation = async (req, res) => {
-  const { bookId } = req.params;
-
-  try {
-    const book = await Book.findById(bookId);
-    if (!book) {
-      return res.status(404).json({ message: 'Book not found' });
+    if (book.status !== 'Reserved' || book.reservedBy.toString() !== userId) {
+      return res.status(400).json({ message: 'Book is not reserved by this user' });
     }
 
-    if (book.status !== 'Reserved') {
-      return res.status(400).json({ message: 'Book is not currently reserved' });
-    }
-
-    book.status = 'Active';
+    // Update book status
+    book.status = 'Issued';
+    book.issuedTo = userId;
+    book.issuedAt = new Date();
+    book.dueDate = dueDate;
     book.reservedBy = null;
     book.reservedAt = null;
+    
     await book.save();
 
-    res.status(200).json({ message: 'Reservation canceled and book is now active.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error canceling the reservation', error: error.message });
-  }
-};
+    // Create activity record
+    await BookActivity.create({
+      userId,
+      bookId: book._id,
+      type: 'issue'
+    });
 
-// Issue a book and calculate due date
-const issueBook = async (req, res) => {
-  const { id } = req.params;
-
-  const currentDate = new Date();
-  const dueDate = new Date(currentDate);
-  dueDate.setDate(currentDate.getDate() + 15);
-
-  try {
-    const updatedBook = await Book.findByIdAndUpdate(
-      id,
+    // Send email notification
+    await sendBookIssuedEmail(
+      user.email,
+      user.name,
       {
-        status: 'Issued',
-        issuedAt: new Date(),
-        dueDate: dueDate,
-        fine: 0
-      },
-      { new: true }
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn,
+        issuedDate: book.issuedAt,
+        dueDate: book.dueDate,
+        callNo: book.call_no
+      }
     );
 
-    if (!updatedBook) {
-      return res.status(404).json({ message: 'Book not found.' });
-    }
-
-    res.status(200).json({ message: 'Book issued successfully.', book: updatedBook });
+    res.json({ message: 'Book issued successfully', book });
   } catch (error) {
-    res.status(500).json({ message: 'Error issuing book', error: error.message });
+    console.error('Error issuing book:', error);
+    res.status(500).json({ message: 'Error issuing book' });
   }
 };
 
-// Return Book Function
-const returnBook = async (req, res) => {
+// Add this new controller method
+exports.getIssuedBooks = async (req, res) => {
   try {
-      const { bookId } = req.params;
-      const book = await Book.findById(bookId);
+    const issuedBooks = await Book.find({ status: 'Issued' })
+      .populate('issuedTo', 'name userid dept')
+      .sort({ issuedAt: -1 });
 
-      if (!book) {
-          return res.status(404).json({ message: 'Book not found' });
-      }
-
-      if (book.status !== 'Issued') {
-          return res.status(400).json({ message: 'Book is not issued' });
-      }
-
-      // Calculate fine (Assuming 2 Rs per day after due date)
-      const dueDate = new Date(book.dueDate);
-      const today = new Date();
-      let fine = 0;
-
-      if (today > dueDate) {
-          const diffTime = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
-          fine = diffTime * 2;
-      }
-
-      return res.status(200).json({ fine });
+    res.json(issuedBooks);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
+    console.error('Error fetching issued books:', error);
+    res.status(500).json({ message: 'Error fetching issued books' });
   }
 };
 
-const confirmPaymentAndReturn = async (req, res) => {
+// Add this new controller method
+exports.getStaffActivities = async (req, res) => {
   try {
-      const { bookId } = req.params;
-      const { paymentSuccess } = req.body;
+    const { staffId } = req.params;
+    
+    const activities = await BookActivity.find()
+      .populate('bookId', 'title isbn call_no')
+      .populate('userId', 'name userid dept')
+      .sort({ timestamp: -1 });
 
-      if (!paymentSuccess) {
-          return res.status(400).json({ message: 'Payment required' });
-      }
+    // Filter activities for the specific staff member
+    const staffActivities = activities.filter(activity => 
+      activity.userId._id.toString() === staffId
+    );
 
-      const book = await Book.findById(bookId);
-      if (!book) {
-          return res.status(404).json({ message: 'Book not found' });
-      }
-
-      // Update book status
-      book.status = 'Active';
-      book.fine = 0;
-      await book.save();
-
-      return res.status(200).json({ message: 'Book returned successfully', fine: 0 });
+    res.json(staffActivities);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
-// Fetch available books
-const getAvailableBooks = async (req, res) => {
-  try {
-    const availableBooks = await Book.find({ status: 'Available' });
-    res.status(200).json(availableBooks);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching available books', error: error.message });
-  }
-};
-
-const getHistory = async (req, res) => {
-  const { userId } = req.query;
-  console.log('History request received for user:', userId);
-
-  try {
-    // Check if user exists in User or Staff collection
-    let user = await User.findOne({ userid: userId });
-    if (!user) {
-      user = await Staff.findOne({ userid: userId });
-    }
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
-
-    // Find all books associated with this user
-    const books = await Book.find({
-      $or: [
-        { reserved: userId },
-        { issuedBy: userId }
-      ]
+    console.error('Error fetching staff activities:', error);
+    res.status(500).json({ 
+      message: 'Error fetching activities',
+      error: error.message 
     });
-
-    // Create history entries with full book details
-    const history = books.map(book => {
-      const entries = [];
-
-      // Add reservation entry if applicable
-      if (book.reservedAt) {
-        entries.push({
-          title: book.title,
-          author: book.author,
-          accno: book.accno,
-          type: 'Reserved',
-          date: book.reservedAt,
-          dueDate: null,
-          fine: 0,
-          status: book.status
-        });
-      }
-
-      // Add issue entry if applicable
-      if (book.issuedAt) {
-        entries.push({
-          title: book.title,
-          author: book.author,
-          accno: book.accno,
-          type: 'Issued',
-          date: book.issuedAt,
-          dueDate: book.dueDate,
-          fine: book.fine || 0,
-          status: book.status
-        });
-      }
-
-      // Add return entry if applicable
-      if (book.returnedAt) {
-        entries.push({
-          title: book.title,
-          author: book.author,
-          accno: book.accno,
-          type: 'Returned',
-          date: book.returnedAt,
-          dueDate: book.dueDate,
-          fine: book.fine || 0,
-          status: 'Returned'
-        });
-      }
-
-      return entries;
-    });
-
-    // Flatten the array and sort by date
-    const flatHistory = history
-      .flat()
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    res.status(200).json(flatHistory);
-
-  } catch (error) {
-    console.error('Error fetching history:', error);
-    res.status(500).json({ message: 'Error fetching history.', error: error.message });
   }
 };
 
-// Controller for generating report for reserved and issued books
-const generateBookReport = async (req, res) => {
+// Add this controller method
+exports.getUserActivities = async (req, res) => {
   try {
-    // Log when the report is being generated
-    console.log("Generating book report...");
+    const { userId } = req.params;
+    
+    const activities = await BookActivity.find({ userId })
+      .populate('bookId', 'title isbn call_no')
+      .sort({ timestamp: -1 });
 
-    // Fetch all books with status "Reserved" or "Issued"
-    const booksReport = await Book.find({
-      status: { $in: ['Reserved', 'Issued'] }
-    }).lean();  // Using lean() for better performance
-
-    // Format dates and handle user data
-    const formattedReport = booksReport.map(book => ({
-      ...book,
-      reservedBy: book.reservedBy ? { name: book.reservedBy } : null,
-      reservedAt: book.reservedAt || null,
-      issuedAt: book.issuedAt || null,
-      dueDate: book.dueDate || null,
-      fine: book.fine || 0
-    }));
-
-    console.log("Formatted report:", formattedReport);
-    res.status(200).json(formattedReport);
+    res.json(activities);
   } catch (error) {
-    console.error('Error generating report:', error);
-    res.status(500).json({ error: 'An error occurred while generating the report' });
+    console.error('Error fetching user activities:', error);
+    res.status(500).json({ 
+      message: 'Error fetching activities',
+      error: error.message 
+    });
   }
 };
 
-module.exports = {
-  uploadBooksCSV,
-  listBooks,
-  searchBooks,
-  updateBookStatus,
-  getAvailableBooks,
-  reserveBook,
-  cancelReservation,
-  issueBook,
-  returnBook,
-  confirmPaymentAndReturn,
-  getHistory,
-  generateBookReport
+// Add this to your bookController.js
+exports.getGuestBooks = async (req, res) => {
+  try {
+    const books = await Book.find()
+      .select('title author accession_no dept call_no status')
+      .sort({ title: 1, accession_no: 1 });
+    res.json(books);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).json({ message: 'Error fetching books' });
+  }
 };

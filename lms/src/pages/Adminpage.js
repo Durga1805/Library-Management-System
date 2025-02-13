@@ -1,101 +1,32 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/lms2.jpg';
+import Header from '../components/Header';
 
 const AdminPage = () => {
   const navigate = useNavigate();
 
-<script type="text/javascript">
-  function preventBack() {
-      window.history.forward()
-  }
-  setTimeout("preventBack()", 0);
-  window.onunload = function () { null };
-</script>
-
-  const handleLogout = () => {
-    navigate('/'); // Redirects to the login page
-  };
 
   return (
-    <div>
-      {/* Header with Logout */}
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <div className='flex items-center'>
-            <h1 className="text-white text-xl font-bold">LMS</h1>
-          </div>
-          <nav className="flex space-x-4">
-            <button
-              onClick={handleLogout}
-              className="text-white hover:text-gray-200 border border-white px-3 py-1 rounded-md"
-            >
-              Logout
-            </button>
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content Section */}
-      <div
-        className="flex items-center justify-center min-h-screen bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
-      >
-        <div className="bg-white bg-opacity-50 p-10 rounded-lg text-left w-1/3">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold text-black">LMS</h1>
-          </div>
-          <h2 className="text-2xl mb-8 text-black">Welcome Admin..!</h2>
-
-          {/* Navigation Menu */}
-          <ul>
-            <li className="mb-4">
-              <Link
-                to="/manage-books"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Manage Books
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to="/manage-users"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Manage Students
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link
-                to="/manage-staffs"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Manage Staffs
-              </Link>
-            </li>
-            
-            {/* <li className="mb-4">
-              <Link
-                to="/report"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                Report
-              </Link>
-            </li> */}
-
-           
-            <li className="mb-4">
-              <Link
-                to="/list-feedback"
-                className="text-lg text-black font-semibold py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300 block"
-              >
-                FeedBack & Suggestions
-              </Link>
-            </li>
-          </ul>
-        </div>
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4">
+        <h1 className="text-2xl font-bold text-center">LMS</h1>
+        <nav className="flex flex-col space-y-3">
+          <Link to="/add-users" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Add Users</Link>
+          <Link to="/searchuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Search Users</Link>
+          <Link to="/listuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">List Users</Link>
+          <Link to="/list-feedback" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Feedback</Link>
+          <Link to="/feedback" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Generate Feedback</Link>
+        </nav>
+      </aside>
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <Header title="Admin Dashboard" />
+        {/* Content Section */}
+        <main className="flex-1 flex items-center justify-center">
+          <h2 className="text-3xl font-semibold text-gray-700">Welcome to Admin Dashboard</h2>
+        </main>
       </div>
     </div>
   );

@@ -1,77 +1,81 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate for navigation
 import backgroundImage from '../assets/about.jpg';
+import { FaBars } from 'react-icons/fa';
+import Header from '../components/Header';
 
 const FeedbackList = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Example: set the profile picture if needed
+  const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false); // For dropdown
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchFeedbacks = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/feedback');
-        if (!response.ok) {
-          throw new Error('Failed to fetch feedback');
-        }
-        const data = await response.json();
-        setFeedbacks(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchFeedbacks = async () => {
+  //     try {
+  //       const response = await fetch('http://localhost:8080/api/feedback');
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch feedback');
+  //       }
+  //       const data = await response.json();
+  //       setFeedbacks(data);
+  //     } catch (error) {
+  //       setError(error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchFeedbacks();
-  }, []);
+  //   fetchFeedbacks();
+  // }, []);
 
-  
   const handleLogout = () => {
-    // Add logout logic
-    console.log('Logout clicked');
+    navigate('/'); // Redirect to the login page
   };
 
-  if (loading) return <div className="text-center text-lg mt-4">Loading feedback...</div>;
-  if (error) return <div className="text-center text-lg text-red-500 mt-4">Error: {error}</div>;
+  // if (loading) return <div className="text-center text-lg mt-4">Loading feedback...</div>;
+  // if (error) return <div className="text-center text-lg text-red-500 mt-4">Error: {error}</div>;
 
   return (
-    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
-      {/* Header Section */}
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <div className='flex items-center'>
-            <h1 className="text-white text-xl font-bold">LMS</h1>
-          </div>
-          <nav className="flex space-x-4">
-            <Link to="/Adminpage" className="text-white hover:text-gray-200">Back</Link>
-            <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
-          </nav>
-        </div>
-      </header>
+    <div className="flex h-screen">
+      {/* Sidebar Section */}
+      <aside className="w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4">
+        <h1 className="text-2xl font-bold text-center">LMS</h1>
+        <nav className="flex flex-col space-y-3">
+        <Link to="/adminpage" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Dashboard</Link>
+          <Link to="/add-users" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Add Users</Link>
+          <Link to="/searchuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Search Users</Link>
+          <Link to="/listuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">List Users</Link>
+          <Link to="/list-feedback" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Feedback </Link>
+        </nav>
+      </aside>
 
-      {/* Main Content */}
-      <div className="container mx-auto pt-24 px-4">
-        <h1 className="text-3xl  text-white  font-bold  mb-6 text-center">Feedback and Suggestions</h1>
-        
-        <div className="bg-white bg-opacity-10 p-6 rounded-lg shadow-md max-h-[60vh] overflow-y-auto">
-          {feedbacks.map((feedback, index) => (
-            <div key={index} className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm">
-              <p className="font-semibold text-gray-800">{feedback.user}</p>
-              <p className="text-gray-600">{feedback.comment}</p>
-              <p className="mt-2"><strong>Rating:</strong> {feedback.rating} / 5</p>
-              <p className="text-gray-600">
-                 <strong>Submitted on:</strong> {new Date(feedback.createdAt).toLocaleString()} {/* Format date */}
-                 </p>
-            </div>
-          ))}
+      {/* Main Content Section */}
+      <div className="flex-1 flex flex-col">
+        {/* Header Section */}
+        <div className="flex-1 flex flex-col">
+  <Header title="Feedback" />
+
+        {/* Main Content */}
+        <div className="container mx-auto pt-24 px-4">
+          <h1 className="text-3xl text-white font-bold mb-6 text-center"></h1>
+
+          <div className="bg-white bg-opacity-10 p-6 rounded-lg shadow-md max-h-[60vh] overflow-y-auto">
+            {feedbacks.map((feedback, index) => (
+              <div key={index} className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm">
+                <p className="font-semibold text-gray-800">{feedback.user}</p>
+                <p className="text-gray-600">{feedback.comment}</p>
+                <p className="mt-2"><strong>Rating:</strong> {feedback.rating} / 5</p>
+                <p className="text-gray-600">
+                  <strong>Submitted on:</strong> {new Date(feedback.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

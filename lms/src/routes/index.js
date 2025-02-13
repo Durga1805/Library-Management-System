@@ -3,48 +3,44 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
-import ForgotPassword from '../pages/ForgotPassword';
-import ResetPassword from '../pages/ResetPassword'; // Import the ResetPassword component
+import Chatbot from '../components/Chatbot'; // Adjust the path
 import Userpage from '../pages/Userpage';
 import AdminPage from '../pages/Adminpage';
 import AddUsers from '../pages/AddUsers';
-import U_searchbook from '../pages/U_searchbook';
+
 import A_ManageUser from '../pages/A_ManageUser';
-import A_ManageBooks from '../pages/A_ManageBooks';
-import AddBooks from '../pages/AddBooks';
-import Addstaff from '../pages/AddStaff';
+
 import StaffPage from '../pages/StaffPage';
 import About from '../pages/About';
-import Listbook from '../pages/Listbook';
-import Listuser from '../pages/Listuser';
-import SearchResults from '../pages/Searchresult';
-import A_SearchBook from '../pages/A_SearchBook';
-import A_SearchUsers from '../pages/A_SearchUser';
-import A_ManageStaffs from '../pages/A_ManageStaff';
-import EditUserDetails from '../pages/EditUserDetails';
-import ListStaff from '../pages/listStaff';
-import SearchStaff from '../pages/A_SearchStaff';
-import S_searchbook from '../pages/S_searchbook';
-import S_Searchresult from '../pages/S_Searchresult';
-import StaffLogin from '../pages/StaffLogin';
-import ReservedBooks from '../pages/ReservedBooks';
-import FeedbackForm from '../pages/FeedbackForm';
-import Issuebooks from '../pages/Issuebooks';
-import U_issedbooks from '../pages/U_issedbooks';
-import ViewProfile1 from '../pages/ViewProfile1';
 import FeedbackList from '../pages/FeedbackList';
-import History from '../pages/History';
-import Staff_issuedbooks from '../pages/Staff_issuedbooks';
-import Staff_updateProfile from '../pages/Staff_updateProfile';
-// import S_feedback from '../pages/S_feedback';
-import S_viewProfile from '../pages/S_viewProfile';
-import BookingPage from '../pages/BookingPage';
-import Chatbot from '../components/Chatbot'; // Adjust the path
-import ReportPage from '../pages/ReportPage';
-import S_History from '../pages/S_History';
 
-
-
+import SearchUser from '../pages/SearchUser';
+import ListUser from '../pages/ListUser';
+import LibStaffPage from '../pages/LibStaffPage';
+import AddBooks from '../pages/AddBooks';
+import SearchAndListBooks from '../pages/SearchAndListBooks';
+import SearchAndListUsers from '../pages/SearchAndListUsers';
+import ProfileSettings from '../pages/ProfileSettings';
+import ProtectedRoute from '../components/ProtectedRoute';
+import ViewBooks from '../pages/ViewBooks';
+import MyBorrowedBooks from '../pages/MyBorrowedBooks';
+import StudentProfile from '../pages/StudentProfile';
+import S_ViewBooks from '../pages/S_ViewBooks';
+import MyBooksDetails from '../pages/MyBooksDetails';
+import StaffProfile from '../pages/StaffProfile';
+import ManageIssuedBooks from '../pages/ManageIssuedBooks';
+import ManageUsers from '../pages/ManageUsers';
+import ReportsAnalytics from '../pages/ReportsAnalytics';
+import LendingArchives from '../pages/LendingArchives';
+import MyHistory from '../pages/MyHistory';
+import UploadNewspaper from '../pages/UploadNewspaper';
+import StudentNewspaper from '../pages/StudentNewspaper';
+import StaffNewspaper from '../pages/StaffNewspaper';
+import GuestBooks from '../pages/GuestBooks';
+import NewspaperPage from '../pages/NewspaperPage';
+import BookRequest from '../pages/BookRequest';
+import RequestBook from '../pages/RequestBook';
+import ManageBookRequests from '../pages/ManageBookRequests';
 
 const router = createBrowserRouter([
     {
@@ -63,25 +59,22 @@ const router = createBrowserRouter([
                 path: "login",
                 element: <Login />
             },
-            {
-                path: "staff-login",
-                element: <StaffLogin />
-            },
-            {
-                path: "forgotpassword", // Updated the route name for consistency
-                element: <ForgotPassword />
-            },
-            {
-                path: "reset-password/:token", // New route for resetting password
-                element: <ResetPassword />
-            },
+            
             {
                 path: "userpage",
-                element: <Userpage />
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <Userpage />
+                    </ProtectedRoute>
+                )
             },
             {
-                path: "staffpage", // Adjusted to lowercase for consistency
-                element: <StaffPage />
+                path: "staffpage",
+                element: (
+                    <ProtectedRoute allowedRoles={['staff']}>
+                        <StaffPage />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "adminpage",
@@ -94,137 +87,194 @@ const router = createBrowserRouter([
             {
                 path: "add-users",
                 element: <AddUsers />
-            },
-            {
-                path: "addstaff",
-                element: <Addstaff />
-            },
-            {
-                path: "userch",
-                element: <U_searchbook />
-            },
-           
-            {
-                path: "manage-books",
-                element: <A_ManageBooks />
-            },
-            {
-                path: "add-books",
+            },{
+                path: "addbooks",
                 element: <AddBooks />
             },
-            {
-                path: "search-results",
-                element: <SearchResults />
-            },
             
-            {
-                path: "listuser",
-                element: <Listuser />
-            },
-            {
-                path: "listbook",
-                element: <Listbook />
-            },
-            {
-                path: "A_search",
-                element: <A_SearchBook />
-            },
+           
+           
             {
                 path: "searchuser",
-                element: <A_SearchUsers />
+                element: <SearchUser />
             },
             {
-                path: "manage-staffs",
-                element: <A_ManageStaffs />
+                path: "listuser",
+                element: <ListUser />
             },
-            {
-                path: "edit-user-details",
-                element: <EditUserDetails />
-            },
-            {
-                path: "liststaff",
-                element: <ListStaff />
-            },
-            {
-                path: "searchstaff",
-                element: <SearchStaff />
-            },
-            {
-                path: "ssearch",
-                element: <S_searchbook />
-            },
-            {
-                path: "search-books",
-                element: <S_Searchresult />
-            },
-            {
-                path: "reserved",
-                element: <ReservedBooks />
-            },
-            {
-                path: "feedback",
-                element: <FeedbackForm />
-            },
-            {
-                path: "issued",
-                element: <Issuebooks />
-            },
-            {
-                path: "issued-books",
-                element: <U_issedbooks />
-            },
-            {
-                path: "view-profile",
-                element: <ViewProfile1 />
-            },
+            
             {
                 path: "list-feedback",
                 element: <FeedbackList />
             },
             {
-                path: "history",
-                element: <History />
+                path: "libstaffpage",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <LibStaffPage />
+                    </ProtectedRoute>
+                )
             },
             {
-                path: "S_issued-books",
-                element: <Staff_issuedbooks />
+                path: "search-list-books",
+                element: <SearchAndListBooks />
             },
             {
-                path: "edit-staff-details",
-                element: <Staff_updateProfile/>
-            },
-            
-            // {
-            //     path: "S_feedback",
-            //     element: <S_feedback />
-            // },
-            {
-                path: "s_view-profile",
-                element: <S_viewProfile />
+                path: "search-list-users",
+                element: <SearchAndListUsers />
             },
             {
-                path: "book-booking",
-                element: <BookingPage />
+                path: "profile",
+                element: <ProfileSettings />
             },
-
+            {
+                path: "view-books",
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <ViewBooks />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "my-borrowed-books",
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <MyBorrowedBooks />
+                    </ProtectedRoute>
+                )
+            },
             {
                 path : "/",
                 element: <Chatbot />
             },
             {
-                path : "report",
-                element: <ReportPage />
+                path: "studentprofile",
+                element: <StudentProfile />
             },
             {
-                path : "staffhistory",
-                element: <S_History />
+                path: "viewbooks",
+                element: <S_ViewBooks />
+            },
+            {
+                path: "my-books-details",
+                element: (
+                    <ProtectedRoute allowedRoles={['staff']}>
+                        <MyBooksDetails />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "staffprofile",
+                element: <StaffProfile />
+            },
+            {
+                path: "issue-books",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <ManageIssuedBooks />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "libstaffpage",
+                element: <LibStaffPage />
+            },  
+            {
+                path: "profile",
+                element: <ProfileSettings />
+            },
+            {
+                path: "users",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <ManageUsers />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "reports",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <ReportsAnalytics />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "lending-archives",
+                element: (
+                    <ProtectedRoute allowedRoles={['staff']}>
+                        <LendingArchives />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "my-history",
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <MyHistory />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "upload-newspaper",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <UploadNewspaper />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "student-newspaper",
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <StudentNewspaper />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "staffnewspaper",
+                element: (
+                    <ProtectedRoute allowedRoles={['staff']}>
+                        <StaffNewspaper />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "books",
+                element: <GuestBooks />
+            },
+            {
+                path: "guestnewspaper",
+                element: <NewspaperPage />
+            },
+            {
+                path: "book-request",
+                element: (
+                    <ProtectedRoute allowedRoles={['student']}>
+                        <BookRequest />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "staffSuggestion",
+                element: (
+                    <ProtectedRoute allowedRoles={['staff']}>
+                        <RequestBook />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "manage-book-requests",
+                element: (
+                    <ProtectedRoute allowedRoles={['libstaff']}>
+                        <ManageBookRequests />
+                    </ProtectedRoute>
+                )
             }
 
         ]
     }
 ]);
-
-
 
 export default router;
 

@@ -1,116 +1,235 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/lms2.jpg';
+import axios from 'axios';
+import Papa from 'papaparse';
+import { FaBars, FaBook, FaUsers, FaUserCircle } from 'react-icons/fa';
+import Header from '../components/Header';
 
 const AddBooks = () => {
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isBooksDropdownOpen, setIsBooksDropdownOpen] = useState(false);
+  
+  const downloadTemplate = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/books/csv-template');
+      const { headers, sampleRow, validDepartments } = response.data;
+      
+      // Add comment row explaining valid departments
+      const commentRow = {
+        title: '# Valid departments: ' + validDepartments.join(', '),
+        author: '',
+        publisher: '',
+        isbn: '',
+        year_of_publication: '',
+        no_of_pages: '',
+        price: '',
+        dept: '',
+        cover_type: '',
+        copies: ''
+      };
+      
+      const csv = Papa.unparse({
+        fields: headers,
+        data: [
+          Object.values(commentRow),
+          Object.values(sampleRow)
+        ]
+      });
 
-  const handleLogout = () => {
-    navigate('/');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'books_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      setMessage('Error downloading template');
+    }
   };
 
   const handleFileUpload = (event) => {
-    setFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type !== 'text/csv') {
+        setMessage('Please upload a CSV file');
+        return;
+      }
+      setFile(file);
+      setMessage('');
+    }
   };
 
-  const handleAddBooks = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Validation checks
     if (!file) {
-      setMessage('Please select a file to upload.');
+      setMessage('Please select a file');
       return;
     }
-
-    if (file.type !== 'text/csv') {
-      setMessage('Please upload a valid CSV file.');
-      return;
-    }
-
-    // Optionally, check for file size (e.g., limit to 5MB)
-    const maxSizeInMB = 5;
-    if (file.size > maxSizeInMB * 1024 * 1024) {
-      setMessage(`File size exceeds ${maxSizeInMB}MB.`);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
 
     setLoading(true);
-
     try {
-      const response = await fetch('http://localhost:8080/api/books/upload-csv', {
-        method: 'POST',
-        body: formData,
+      const books = await new Promise((resolve, reject) => {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            console.log('Parsed CSV data:', results.data); // Debug log
+            resolve(results.data);
+          },
+          error: (error) => reject(error)
+        });
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData.message || 'An unknown error occurred.';
-        throw new Error(`Error: ${errorMessage}`);
+      if (!books || books.length === 0) {
+        setMessage('No valid data found in CSV file');
+        return;
       }
 
-      const data = await response.json();
-      setMessage('Books successfully added!');
-      console.log('Success:', data);
+      const response = await axios.post('http://localhost:8080/api/books/upload', { books });
+      console.log('Upload response:', response.data);
+      
+      setMessage(`Successfully added ${response.data.books.length} books`);
+      if (response.data.errors) {
+        const errorMessages = response.data.errors.join('\n');
+        setMessage(prev => `${prev}\n\nWarnings:\n${errorMessages}`);
+      }
+      
+      // Clear the file input
+      setFile(null);
+      event.target.reset();
     } catch (error) {
-      setMessage(`Error adding books: ${error.message}`);
-      console.error('Error:', error);
+      console.error('Error uploading books:', error);
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.response?.data?.details || 
+                          'Error uploading books';
+      setMessage(`Upload failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <header className='h-16 shadow-lg bg-gradient-to-r from-blue-500 to-red-700 fixed w-full z-40'>
-        <div className='h-full container mx-auto flex items-center px-4 justify-between'>
-          <div className='flex items-center'>
-            <h1 className="text-white text-xl font-bold">LMS</h1>
-          </div>
-          <nav className="flex space-x-4">
-            <Link to="/manage-books" className="text-white hover:text-gray-200">Back</Link>
-            <button onClick={handleLogout} className="text-white hover:text-gray-200">Logout</button>
-          </nav>
-        </div>
-      </header>
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4">
+        <h1 className="text-2xl font-bold text-center">LMS</h1>
 
-      <div
-        className="flex items-center justify-center min-h-screen bg-cover bg-center"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      >
-        <form
-          onSubmit={handleAddBooks}
-          className="w-full max-w-xl p-8 bg-white bg-opacity-90 rounded-lg shadow-lg flex flex-col items-center space-y-6"
-        >
-          <h2 className="text-2xl font-bold text-blue-700">Add Books from CSV</h2>
-          <input
-            type="file"
-            name="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        <Link 
+            to="/libstaffpage" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
           >
-            {loading ? 'Loading...' : 'Add Books'}
-          </button>
-          {message && (
-            <p className={`text-sm ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
-              {message}
-            </p>
-          )}
-        </form>
+            Dashboard
+          </Link>
+        <nav className="flex flex-col space-y-3">
+          {/* Manage Books Dropdown */}
+          <div className="relative">
+            <button
+              className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center justify-between w-full"
+              onClick={() => setIsBooksDropdownOpen(!isBooksDropdownOpen)}
+            >
+              <span className="flex items-center">
+                <FaBook className="mr-2" />
+                Manage Books
+              </span>
+              <FaBars />
+            </button>
+            {isBooksDropdownOpen && (
+              <div className="absolute left-0 mt-2 w-full bg-gray-700 rounded-md shadow-lg z-10">
+                <Link to="/addbooks" className="block px-4 py-2 hover:bg-gray-600">Add Books</Link>
+                <Link to="/search-list-books" className="block px-4 py-2 hover:bg-gray-600">Search & List Books</Link>
+                <Link to="/issue-books" className="block px-4 py-2 hover:bg-gray-600">Issue Books</Link>
+                
+              </div>
+            )}
+          </div>
+
+          {/* Manage Users Dropdown */}
+          <Link 
+            to="/users" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Manage Users
+          </Link>
+
+          {/* Reports & Analytics */}
+          <Link 
+            to="/reports" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Reports & Analytics
+          </Link>
+
+          {/* Profile Settings */}
+          <Link 
+            to="/profile" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Profile Settings
+          </Link>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <Header title="Add Books" />
+
+        {/* Main Content Area */}
+        <main className="flex-1 p-6 bg-gray-100 overflow-auto">
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-6">Add Books via CSV</h2>
+            
+            {message && (
+              <div className={`p-4 mb-4 rounded whitespace-pre-line ${
+                message.includes('Success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
+                {message}
+              </div>
+            )}
+
+            <div className="mb-6">
+              <button
+                onClick={downloadTemplate}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Download CSV Template
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload CSV File
+                </label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="w-full border-gray-300 rounded-md shadow-sm"
+                  disabled={loading}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 disabled:bg-gray-400"
+                disabled={!file || loading}
+              >
+                {loading ? 'Uploading...' : 'Upload Books'}
+              </button>
+            </form>
+          </div>
+        </main>
       </div>
     </div>
   );
 };
 
-export default AddBooks;
+export default AddBooks; 

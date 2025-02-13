@@ -1,47 +1,30 @@
-// LIBRARY_MANAGEMENT_SYSTEM\backend\routes\userRoutes.js
 const express = require('express');
-const multer = require('multer');
-const {
-  uploadCSV,
-  login,
-  listUsers,
-  updateUserStatus,
-  searchUsers,
-  updateUserProfile,
-  getUserProfile,
-  googleLogin
-} = require('../controllers/userController');
-// const { forgotPassword, resetPassword } = require('../controllers/forgotPasswordController');
-
 const router = express.Router();
+const userController = require('../controllers/userController');
+const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
-// Multer setup to handle file uploads (CSV and profile pictures)
-const storage = multer.memoryStorage();  // Store files in memory as buffer
-const upload = multer({ storage });
+// Get all users route should come before parameterized routes
+router.get('/all', userController.getAllUsers);
+router.get('/search', userController.searchUsers);
+router.get('/csv-template', userController.getCSVTemplate);
 
-// POST route for uploading CSV file
-router.post('/upload-csv', upload.single('csvFile'), uploadCSV);
+// Profile routes
+router.get('/profile', auth, userController.getProfile);
+router.put('/update-profile', auth, userController.updateProfile);
+router.post('/change-password', auth, userController.changePassword);
+router.post('/upload-profile-pic', auth, upload.single('profilePic'), userController.uploadProfilePic);
 
-// POST route for login
-router.post('/login', login);
+// Staff management routes
+router.post('/addStaff', userController.addStaff);
+router.post('/uploadStudents', userController.uploadStudents);
 
-router.post('/google-login', googleLogin);
+// Get user by ID route should come last
+router.get('/:id', userController.getUserProfile);
+router.get('/:userId/full-profile', auth, userController.getFullProfile);
+router.get('/:userId/activities', auth, userController.getUserActivities);
 
-// GET route for fetching users without password
-router.get('/users', listUsers);
+// Add this to your existing routes
+router.put('/:userId/status', auth, userController.updateUserStatus);
 
-// PUT route for updating user status
-router.put('/users/:userId/status', updateUserStatus);
-
-// GET route for searching users
-router.get('/users/search', searchUsers);
-
-// PUT route for updating user profile (including profile picture)
-router.put('/users/profile', upload.single('profilePic'), updateUserProfile);
-
-
-// GET route for fetching user profile by userId
-router.get('/profile/:userId', getUserProfile);
-
-
-module.exports = router;
+module.exports = router; 

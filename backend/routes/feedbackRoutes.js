@@ -1,12 +1,11 @@
 const express = require('express');
-const feedbackController = require('../controllers/feedbackController');
-
 const router = express.Router();
+const feedbackController = require('../controllers/feedbackController');
+const auth = require('../middleware/auth');
 
-// Route to get all feedback
-router.get('/feedback', feedbackController.getAllFeedback);
+router.post('/', auth, feedbackController.createFeedback);
+router.get('/', auth, feedbackController.getAllFeedbacks);
+router.get('/:id', auth, feedbackController.getFeedbackById);
+router.post('/:id/submit', auth, feedbackController.submitResponse);
 
-// Route to add feedback
-router.post('/feedback', feedbackController.addFeedback);
-
-module.exports = router;
+module.exports = router; 

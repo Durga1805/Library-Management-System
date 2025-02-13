@@ -1,13 +1,8 @@
-import React, { useState, useEffect } from 'react';  // Import React hooks
-import { useNavigate } from 'react-router-dom';      // Import useNavigate
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const navigate = useNavigate(); 
-  const [showDropdown, setShowDropdown] = useState(false); // State to show/hide the dropdown
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown); // Toggle dropdown visibility
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
     const preventBack = () => {
@@ -26,12 +21,8 @@ const Home = () => {
     };
   }, []);
 
-  const handleOptionClick = (role) => {
-    if (role === 'staff') {
-      navigate('/staff-login'); // Navigate to staff login page
-    } else if (role === 'student') {
-      navigate('/login'); // Navigate to student login page
-    }
+  const handleOptionClick = () => {
+    navigate('/login'); // Navigate to the login page
   };
 
   return (
@@ -39,39 +30,43 @@ const Home = () => {
       className="home flex flex-col items-center justify-between h-screen bg-center" 
       style={{ 
         backgroundImage: `url(${require('../assets/lms3.jpg')})`,
-        backgroundSize: '100%', 
+        backgroundSize: 'cover', 
         backgroundRepeat: 'no-repeat', 
         backgroundPosition: 'center' 
       }}
     >
+      {/* Header */}
       <header className="w-full p-4 bg-gradient-to-r from-blue-500 to-red-500 text-white flex items-center justify-between">
         <h1 className="text-2xl font-bold">LMS</h1>
-        <div className="relative">
+        
+        <nav className="flex space-x-4">
+          {/* Link to List All Books */}
           <button 
-            className="bg-white text-blue-500 px-4 py-2 rounded" 
-            onClick={toggleDropdown}
+            className="px-4 py-2  text-black-500 rounded-md  transition"
+            onClick={() => navigate('/books')}
+          >
+            Books
+          </button>
+
+          {/* Link to View Newspaper */}
+          <button 
+            className="px-4 py-2  text-black-500 rounded-md  transition"
+            onClick={() => navigate('/guestnewspaper')}
+          >
+            Newspaper
+          </button>
+
+          {/* Login Button */}
+          <button 
+            className="px-4 py-2 bg-white text-blue-500 rounded-md hover:bg-gray-200 transition"
+            onClick={handleOptionClick}
           >
             Login
           </button>
-          {showDropdown && (
-            <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
-              <button 
-                className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
-                onClick={() => handleOptionClick('staff')}
-              >
-                Staff Login
-              </button>
-              <button 
-                className="block px-4 py-2 text-blue-500 hover:bg-gray-100 w-full text-left"
-                onClick={() => handleOptionClick('student')}
-              >
-                Student Login
-              </button>
-            </div>
-          )}
-        </div>
+        </nav>
       </header>
 
+      {/* Welcome Text */}
       <div className="flex-grow flex items-center justify-center">
         <h1 className="text-3xl text-white font-bold text-center">
           Welcome to Library Management System..
