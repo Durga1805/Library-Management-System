@@ -4,6 +4,7 @@ const bookController = require('../controllers/bookController');
 const bookRequestController = require('../controllers/bookRequestController');
 const auth = require('../middleware/auth');
 const recommendationController = require('../controllers/recommendationController');
+const reminderService = require('../services/reminderService');
 
 router.post('/upload', bookController.uploadBooks);
 router.get('/csv-template', bookController.getCSVTemplate);
@@ -30,5 +31,13 @@ router.put('/request/:id/status', auth, bookRequestController.updateRequestStatu
 
 // Add this to your existing routes
 router.get('/recommendations', auth, recommendationController.getRecommendedBooks);
+router.post('/send-reminders', auth, async (req, res) => {
+  try {
+    await reminderService.sendDueDateReminders();
+    res.json({ message: 'Reminders sent successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending reminders', error: error.message });
+  }
+});
 
 module.exports = router; 

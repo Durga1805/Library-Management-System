@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { calculateFine } = require('../utils/fineCalculator');
 
 const bookSchema = new mongoose.Schema({
   accession_no: { type: Number, required: true, unique: true },
@@ -65,5 +66,17 @@ bookSchema.pre('save', function(next) {
   }
   next();
 });
+
+// Add a virtual field for fine
+bookSchema.virtual('currentFine').get(function() {
+  if (this.dueDate && this.status === 'Issued') {
+    return calculateFine(this.dueDate);
+  }
+  return 0;
+});
+
+// Ensure virtuals are included when converting to JSON
+bookSchema.set('toJSON', { virtuals: true });
+bookSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Book', bookSchema); 

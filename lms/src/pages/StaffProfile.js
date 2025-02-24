@@ -190,79 +190,76 @@ const StaffProfile = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4 ${
-        isMenuOpen ? 'block' : 'hidden md:block'
-      }`}>
-        <h1 className="text-2xl font-bold text-center">LMS</h1>
+      <aside
+  className={`w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4 ${
+    isMenuOpen ? 'block' : 'hidden md:block'
+  }`}
+>
+  <h1 className="text-2xl font-bold text-center">LMS</h1>
+  <nav className="flex flex-col space-y-3">
 
-        <Link
-                  to="/staffpage"
-                  className="block px-4 py-2 hover:bg-gray-600"
-                >
-                  Dashboard
-                </Link>
+  <Link
+      to="/staffpage"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaBook className="mr-2" />
+      Dashboard
+    </Link>
+    {/* Books (No Dropdown) */}
+    <Link
+      to="/viewbooks"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaBook className="mr-2" />
+      View Books
+    </Link>
 
-        <nav className="flex flex-col space-y-3">
-          {/* Books Dropdown */}
-          <div className="relative">
-            <button
-              className="w-full px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center justify-between"
-              onClick={() => setIsBooksDropdownOpen(!isBooksDropdownOpen)}
-            >
-              <span className="flex items-center">
-                <FaBook className="mr-2" />
-                Books
-              </span>
-              <FaBars />
-            </button>
-            {isBooksDropdownOpen && (
-              <div className="mt-2 py-2 bg-gray-700 rounded-md">
-                <Link
-                  to="/viewbooks"
-                  className="block px-4 py-2 hover:bg-gray-600"
-                >
-                  View Books
-                </Link>
-               
-              </div>
-            )}
-          </div>
+    {/* Profile Settings */}
+    <Link
+      to="/staffprofile"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaUser className="mr-2" />
+      Profile Settings
+    </Link>
 
-          {/* Profile Settings */}
-          <Link
-            to="/staffprofile"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaUser className="mr-2" />
-            Profile Settings
-          </Link>
+    {/* Newspapers */}
+    <Link
+      to="/staffnewspaper"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaNewspaper className="mr-2" />
+      Newspapers
+    </Link>
 
-          {/* Borrowed Books */}
-          <Link
-            to="/my-books-details"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaHistory className="mr-2" />
-            My Borrowed Books
-          </Link>
+    {/* Borrowed Books */}
+    <Link
+      to="/my-books-details"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaHistory className="mr-2" />
+      My Borrowed Books
+    </Link>
 
-          <Link
-            to="/lending-archives"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaHistory className="mr-2" />
-            Lending Archives
-          </Link>
-          <Link
-            to="/staffnewspaper"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaNewspaper className="mr-2" />
-            Newspapers
-          </Link>
-         
-        </nav>
-      </aside>
+    {/* Lending Archives */}
+    <Link
+      to="/lending-archives"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaHistory className="mr-2" />
+      Lending Archives
+    </Link>
+
+    {/* Book Suggestion */}
+    <Link
+      to="/staffSuggestion"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaBook className="mr-2" />
+      Book Suggestion
+    </Link>
+  </nav>
+</aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">

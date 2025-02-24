@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaBook, FaBars,FaUsers, FaUndo } from 'react-icons/fa';
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
+import { calculateFine } from '../utils/fineCalculator';
 
 const ManageIssuedBooks = () => {
   const [issuedBooks, setIssuedBooks] = useState([]);
@@ -20,7 +21,14 @@ const ManageIssuedBooks = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/api/books/issued-books');
-      setIssuedBooks(response.data);
+      
+      // Calculate fines for each book
+      const booksWithFines = response.data.map(book => ({
+        ...book,
+        fine: calculateFine(book.dueDate)
+      }));
+      
+      setIssuedBooks(booksWithFines);
     } catch (error) {
       console.error('Error fetching issued books:', error);
       setError('Failed to fetch issued books');
@@ -31,28 +39,27 @@ const ManageIssuedBooks = () => {
 
   const handleReturn = async (bookId) => {
     try {
-      console.log('Attempting to return book:', bookId);
-      const response = await axiosInstance.post(`/api/books/return/${bookId}`);
+      const book = issuedBooks.find(b => b._id === bookId);
+      const fine = calculateFine(book.dueDate);
       
-      if (response.data.fine > 0) {
-        // Show payment confirmation dialog
+      if (fine > 0) {
         const payNow = window.confirm(
-          `Book has a fine of ₹${response.data.fine}. Would you like to pay now?`
+          `Book has a fine of ₹${fine}. Would you like to pay now?`
         );
         
         if (payNow) {
-          // Handle payment
-          await handlePayment(bookId, response.data.fine);
+          await handlePayment(bookId, fine);
         } else {
-          alert(`Book marked for return. Please pay the fine of ₹${response.data.fine} to complete the return.`);
+          alert(`Book marked for return. Please pay the fine of ₹${fine} to complete the return.`);
         }
       } else {
         alert('Book returned successfully');
-        await fetchIssuedBooks(); // Refresh the list
       }
+      
+      fetchIssuedBooks(); // Refresh the list
     } catch (error) {
       console.error('Error returning book:', error);
-      alert(error.response?.data?.message || 'Error returning book. Please try again.');
+      alert('Error returning book');
     }
   };
 
@@ -70,16 +77,6 @@ const ManageIssuedBooks = () => {
     }
   };
 
-  const calculateFine = (dueDate) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    if (today > due) {
-      const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
-      return diffDays * 5; // ₹5 per day
-    }
-    return 0;
-  };
-
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -87,11 +84,11 @@ const ManageIssuedBooks = () => {
         <h1 className="text-2xl font-bold text-center">LMS</h1>
 
         <Link 
-            to="/libstaffpage" 
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            Dashboard
-          </Link>
+          to="/libstaffpage" 
+          className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+        >
+          Dashboard
+        </Link>
         <nav className="flex flex-col space-y-3">
           {/* Manage Books Dropdown */}
           <div className="relative">
@@ -137,6 +134,21 @@ const ManageIssuedBooks = () => {
             className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
           >
             Profile Settings
+          </Link>
+
+          <Link 
+            to="/upload-newspaper" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Upload Newspaper
+          </Link>
+
+          <Link 
+            to="/manage-book-requests" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaBook className="mr-2" />
+            Book Requests
           </Link>
         </nav>
       </aside>
@@ -193,7 +205,6 @@ const ManageIssuedBooks = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {issuedBooks.map((book) => {
-                        const fine = calculateFine(book.dueDate);
                         return (
                           <tr key={book._id}>
                             <td className="px-6 py-4">
@@ -222,8 +233,8 @@ const ManageIssuedBooks = () => {
                               {new Date(book.dueDate).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4">
-                              {fine > 0 ? (
-                                <span className="text-red-600 font-semibold">₹{fine}</span>
+                              {book.fine > 0 ? (
+                                <span className="text-red-600 font-semibold">₹{book.fine}</span>
                               ) : (
                                 <span className="text-green-600">No Fine</span>
                               )}

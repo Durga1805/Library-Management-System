@@ -4,6 +4,7 @@ const User = require('../models/User');
 const { sendBookIssuedEmail, sendBookReturnedEmail } = require('../utils/emailService');
 const { createNotification } = require('./notificationController');
 const Notification = require('../models/Notification');
+const Payment = require('../models/Payment');
 
 // Get the next accession number
 const getNextAccessionNo = async () => {
@@ -650,10 +651,26 @@ exports.getUserActivities = async (req, res) => {
     const { userId } = req.params;
     
     const activities = await BookActivity.find({ userId })
-      .populate('bookId', 'title isbn call_no')
+      .populate('bookId', 'title author isbn call_no')
       .sort({ timestamp: -1 });
 
-    res.json(activities);
+    // Add payment activities if any
+    const payments = await Payment.find({ userId })
+      .populate('bookId', 'title author isbn call_no')
+      .sort({ timestamp: -1 });
+
+    // Combine activities and payments
+    const allActivities = [
+      ...activities,
+      ...payments.map(payment => ({
+        ...payment.toObject(),
+        type: 'payment',
+        timestamp: payment.timestamp,
+        fine: payment.amount
+      }))
+    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    res.json(allActivities);
   } catch (error) {
     console.error('Error fetching user activities:', error);
     res.status(500).json({ 

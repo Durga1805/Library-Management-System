@@ -1,4 +1,3 @@
-// lms\src\components\BookRecommendations.js
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axiosConfig';
 import { FaBook, FaSpinner, FaBookmark } from 'react-icons/fa';

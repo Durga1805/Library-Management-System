@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBook, FaBars, FaDownload, FaChartBar, FaExclamationTriangle } from 'react-icons/fa';
+import { FaBook, FaBars, FaDownload, FaChartBar, FaExclamationTriangle, FaMoneyBillWave } from 'react-icons/fa';
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
 import * as XLSX from 'xlsx';
@@ -18,9 +18,11 @@ const ReportsAnalytics = () => {
   const [userReports, setUserReports] = useState([]);
   const [selectedDateRange, setSelectedDateRange] = useState('month');
   const [error, setError] = useState(null);
+  const [finePayments, setFinePayments] = useState([]);
 
   useEffect(() => {
     fetchReportData();
+    fetchFinePayments();
   }, [selectedDateRange]);
 
   const fetchReportData = async () => {
@@ -47,57 +49,62 @@ const ReportsAnalytics = () => {
     }
   };
 
+  const fetchFinePayments = async () => {
+    try {
+      const response = await axiosInstance.get('/api/reports/fine-payments');
+      setFinePayments(response.data);
+    } catch (error) {
+      console.error('Error fetching fine payments:', error);
+    }
+  };
+
   const downloadReport = (type) => {
-    let data = [];
-    let filename = '';
+    const workbook = XLSX.utils.book_new();
+    let data, filename;
 
-    switch(type) {
-      case 'overdue':
-        data = userReports
-          .filter(user => user.overdueBooks.length > 0)
-          .flatMap(user => user.overdueBooks.map(book => ({
-            'User ID': user.userid,
-            'User Name': user.name,
-            'Book Title': book.title,
-            'Due Date': new Date(book.dueDate).toLocaleDateString(),
-            'Days Overdue': book.daysOverdue,
-            'Fine Amount': `₹${book.fineAmount}`
-          })));
-        filename = 'overdue_report';
-        break;
-
-      case 'fines':
-        data = userReports
-          .filter(user => user.totalFines > 0)
-          .map(user => ({
-            'User ID': user.userid,
-            'User Name': user.name,
-            'Department': user.dept,
-            'Total Fines': `₹${user.totalFines}`,
-            'Paid Fines': `₹${user.paidFines}`,
-            'Pending Fines': `₹${user.totalFines - user.paidFines}`
-          }));
-        filename = 'fines_report';
-        break;
-
-      case 'activity':
-        data = userReports.map(user => ({
-          'User ID': user.userid,
-          'User Name': user.name,
-          'Department': user.dept,
-          'Books Borrowed': user.totalBorrowed,
-          'Current Loans': user.currentLoans,
-          'Overdue Books': user.overdueBooks.length,
-          'Total Fines': `₹${user.totalFines}`
-        }));
-        filename = 'activity_report';
-        break;
+    if (type === 'activity') {
+      data = userReports.map(user => ({
+        'User ID': user.userid,
+        'Name': user.name,
+        'Department': user.dept,
+        'Total Books Borrowed': user.totalBorrowed,
+        'Current Loans': user.currentLoans,
+        'Overdue Books': user.overdueBooks.length,
+        'Total Fines': `₹${user.totalFines}`
+      }));
+      filename = 'user_activity_report';
+    } else if (type === 'fines') {
+      data = finePayments.map(payment => ({
+        'Book': payment.bookId?.title || payment.bookTitle || 'N/A',
+        'User': payment.userId?.name || 'N/A',
+        'Amount': `₹${payment.amount}`,
+        'Payment Method': payment.paymentMethod,
+        'Date': new Date(payment.timestamp).toLocaleDateString(),
+        'Status': payment.status
+      }));
+      filename = 'fine_payments_report';
     }
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Report');
-    XLSX.writeFile(wb, `${filename}_${selectedDateRange}.xlsx`);
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
+    XLSX.writeFile(workbook, `${filename}_${selectedDateRange}.xlsx`);
+  };
+
+  const generateFineReport = () => {
+    const workbook = XLSX.utils.book_new();
+    
+    const fineData = finePayments.map(payment => ({
+      'Book Title': payment.bookId?.title || payment.bookTitle || 'N/A',
+      'User Name': payment.userId?.name || 'N/A',
+      'Amount': `₹${payment.amount}`,
+      'Payment Method': payment.paymentMethod,
+      'Payment Date': new Date(payment.timestamp).toLocaleDateString(),
+      'Status': payment.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(fineData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fine Payments');
+    XLSX.writeFile(workbook, 'fine_payments_report.xlsx');
   };
 
   return (
@@ -107,11 +114,11 @@ const ReportsAnalytics = () => {
         <h1 className="text-2xl font-bold text-center">LMS</h1>
 
         <Link 
-            to="/libstaffpage" 
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            Dashboard
-          </Link>
+          to="/libstaffpage" 
+          className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+        >
+          Dashboard
+        </Link>
         <nav className="flex flex-col space-y-3">
           {/* Manage Books Dropdown */}
           <div className="relative">
@@ -157,6 +164,21 @@ const ReportsAnalytics = () => {
             className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
           >
             Profile Settings
+          </Link>
+
+          <Link 
+            to="/upload-newspaper" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Upload Newspaper
+          </Link>
+
+          <Link 
+            to="/manage-book-requests" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaBook className="mr-2" />
+            Book Requests
           </Link>
         </nav>
       </aside>
@@ -295,6 +317,47 @@ const ReportsAnalytics = () => {
                               </span>
                             </td>
                             <td className="px-6 py-4">₹{user.totalFines}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Fine Payments Card */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <FaMoneyBillWave className="mr-2 text-green-500" />
+                      Fine Payments
+                    </h3>
+                    <button
+                      onClick={generateFineReport}
+                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Export
+                    </button>
+                  </div>
+                  
+                  <div className="mt-4 max-h-96 overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2">Book</th>
+                          <th className="px-4 py-2">User</th>
+                          <th className="px-4 py-2">Amount</th>
+                          <th className="px-4 py-2">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {finePayments.map(payment => (
+                          <tr key={payment._id}>
+                            <td className="px-4 py-2">{payment.bookId?.title || payment.bookTitle || 'N/A'}</td>
+                            <td className="px-4 py-2">{payment.userId?.name || 'N/A'}</td>
+                            <td className="px-4 py-2">₹{payment.amount}</td>
+                            <td className="px-4 py-2">
+                              {new Date(payment.timestamp).toLocaleDateString()}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

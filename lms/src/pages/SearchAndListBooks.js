@@ -121,11 +121,11 @@ const SearchAndListBooks = () => {
         <h1 className="text-2xl font-bold text-center">LMS</h1>
 
         <Link 
-            to="/libstaffpage" 
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            Dashboard
-          </Link>
+          to="/libstaffpage" 
+          className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+        >
+          Dashboard
+        </Link>
         <nav className="flex flex-col space-y-3">
           {/* Manage Books Dropdown */}
           <div className="relative">
@@ -171,6 +171,21 @@ const SearchAndListBooks = () => {
             className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
           >
             Profile Settings
+          </Link>
+
+          <Link 
+            to="/upload-newspaper" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            Upload Newspaper
+          </Link>
+
+          <Link 
+            to="/manage-book-requests" 
+            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+          >
+            <FaBook className="mr-2" />
+            Book Requests
           </Link>
         </nav>
       </aside>

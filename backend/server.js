@@ -4,6 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const reminderService = require('./services/reminderService');
+const cron = require('node-cron');
 
 // Route imports
 const userRoutes = require('./routes/userRoutes');
@@ -14,8 +16,8 @@ const reportRoutes = require('./routes/reportRoutes');
 const newspaperRoutes = require('./routes/newspaperRoutes');
 const bookRequestRoutes = require('./routes/bookRequestRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-const feedbackRoutes = require('./routes/feedbackRoutes');
 const { verifyConnection } = require('./utils/emailService');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 require('dotenv').config();
 
@@ -28,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Try')
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
   console.log('MongoDB connected successfully');
 })
@@ -59,7 +61,20 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/newspapers', newspaperRoutes);
 app.use('/api/books/request', bookRequestRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/feedback', feedbackRoutes);
+app.use('/api/payment', paymentRoutes);
+
+// Schedule reminder check to run at 12:15 PM IST every day
+cron.schedule('15 12 * * *', async () => {
+  console.log('Running due date reminders check at 12:15 PM...');
+  try {
+    await reminderService.sendDueDateReminders();
+    console.log('Reminder check completed successfully');
+  } catch (error) {
+    console.error('Error running reminder check:', error);
+  }
+}, {
+  timezone: "Asia/Kolkata" // For Indian Standard Time
+});
 
 // Multer error handling middleware
 app.use((error, req, res, next) => {

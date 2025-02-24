@@ -1,25 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaBars, FaBook, FaUser, FaHistory, FaSignOutAlt, FaNewspaper } from 'react-icons/fa';
-import { handleLogout } from '../utils/auth';
+import { Link } from 'react-router-dom';
+import { FaBars, FaBook, FaUser, FaHistory, FaNewspaper } from 'react-icons/fa';
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
-import Notifications from '../components/Notifications';
-import BookRecommendations from '../components/BookRecommendations';
+import DueReminders from '../components/DueReminders';
 import StaffRecommendations from '../components/StaffRecommendations';
 
 const StaffPage = () => {
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isBooksDropdownOpen, setIsBooksDropdownOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [stats, setStats] = useState({
-    totalBooks: 0,
-    issuedBooks: 0,
-    dueReturns: 0
-  });
-  const [recentActivities, setRecentActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
@@ -27,105 +15,78 @@ const StaffPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      // Fetch statistics
-      const statsResponse = await axiosInstance.get('/api/books/statistics');
-      setStats(statsResponse.data);
-
-      // Fetch recent activities
-      const activitiesResponse = await axiosInstance.get('/api/books/recent-activities');
-      setRecentActivities(activitiesResponse.data);
+      await axiosInstance.get('/api/books/statistics');
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const formatTimeAgo = (timestamp) => {
-    const now = new Date();
-    const activityTime = new Date(timestamp);
-    const diffInSeconds = Math.floor((now - activityTime) / 1000);
-
-    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4 ${
-        isMenuOpen ? 'block' : 'hidden md:block'
-      }`}>
-        <h1 className="text-2xl font-bold text-center">LMS</h1>
-        <nav className="flex flex-col space-y-3">
-          {/* Books Dropdown */}
-          <div className="relative">
-            <button
-              className="w-full px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center justify-between"
-              onClick={() => setIsBooksDropdownOpen(!isBooksDropdownOpen)}
-            >
-              <span className="flex items-center">
-                <FaBook className="mr-2" />
-                Books
-              </span>
-              <FaBars />
-            </button>
-            {isBooksDropdownOpen && (
-              <div className="mt-2 py-2 bg-gray-700 rounded-md">
-                <Link
-                  to="/viewbooks"
-                  className="block px-4 py-2 hover:bg-gray-600"
-                >
-                  View Books
-                </Link>
-                
-                
-              </div>
-            )}
-          </div>
+      <aside
+  className={`w-64 bg-gray-800 text-white p-5 flex flex-col space-y-4 ${
+    isMenuOpen ? 'block' : 'hidden md:block'
+  }`}
+>
+  <h1 className="text-2xl font-bold text-center">LMS</h1>
+  <nav className="flex flex-col space-y-3">
+    {/* Books (No Dropdown) */}
+    <Link
+      to="/viewbooks"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaBook className="mr-2" />
+      View Books
+    </Link>
 
-          {/* Profile Settings */}
-          <Link
-            to="/staffprofile"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaUser className="mr-2" />
-            Profile Settings
-          </Link>
+    {/* Profile Settings */}
+    <Link
+      to="/staffprofile"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaUser className="mr-2" />
+      Profile Settings
+    </Link>
 
-          <Link
-            to="/staffnewspaper"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaNewspaper className="mr-2" />
-            Newspapers
-          </Link>
+    {/* Newspapers */}
+    <Link
+      to="/staffnewspaper"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaNewspaper className="mr-2" />
+      Newspapers
+    </Link>
 
-          {/* Borrowed Books */}
-          <Link
-            to="/my-books-details"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaHistory className="mr-2" />
-            My Borrowed Books
-          </Link>
+    {/* Borrowed Books */}
+    <Link
+      to="/my-books-details"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaHistory className="mr-2" />
+      My Borrowed Books
+    </Link>
 
-          {/* Lending Archives */}
-          <Link
-            to="/lending-archives"
-            className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-          >
-            <FaHistory className="mr-2" />
-            Lending Archives
-          </Link>
+    {/* Lending Archives */}
+    <Link
+      to="/lending-archives"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaHistory className="mr-2" />
+      Lending Archives
+    </Link>
 
-          {/* Logout */}
-         
-        </nav>
-      </aside>
+    {/* Book Suggestion */}
+    <Link
+      to="/staffSuggestion"
+      className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
+    >
+      <FaBook className="mr-2" />
+      Book Suggestion
+    </Link>
+  </nav>
+</aside>
+
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -163,7 +124,7 @@ const StaffPage = () => {
               <div className="flex items-center space-x-4">
                 <FaHistory className="text-3xl text-green-500" />
                 <div>
-                  <h3 className="text-lg font-semibold">My Borrowed Books</h3>
+                  <h3 className="text-lg font-semibold" id="borrowedbooks">My Borrowed Books</h3>
                   <p className="text-gray-600">View your borrowed and reserved books</p>
                 </div>
               </div>
@@ -210,6 +171,7 @@ const StaffPage = () => {
           </div>
 
           <div className="mb-8">
+            <DueReminders />
             <StaffRecommendations />
           </div>
         </main>

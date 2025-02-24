@@ -1,4 +1,3 @@
-// backend\services\recommendationService.js
 const Book = require('../models/Book');
 const BookActivity = require('../models/BookActivity');
 const User = require('../models/User');

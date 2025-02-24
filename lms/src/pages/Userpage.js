@@ -4,6 +4,7 @@ import { FaBars, FaBook, FaUser, FaHistory, FaSignOutAlt, FaUserCircle, FaNewspa
 import { handleLogout } from '../utils/auth';
 import Header from '../components/Header';
 import BookRecommendations from '../components/BookRecommendations';
+import DueReminders from '../components/DueReminders';
 
 
 const UserPage = () => {
@@ -127,6 +128,7 @@ const UserPage = () => {
         {/* Main Content Area */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
+            <DueReminders />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Quick Access Cards */}
               <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">

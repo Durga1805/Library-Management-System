@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../utils/axiosConfig';
-import { GoogleLogin } from '@react-oauth/google';
+// import { GoogleLogin } from '@react-oauth/google';
 import { initSession } from '../utils/sessionManager';
 
 const Login = () => {
@@ -96,6 +96,7 @@ const Login = () => {
                 type="text"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                 value={emailOrUserid}
+                id="email"
                 onChange={(e) => setEmailOrUserid(e.target.value)}
                 required
               />
@@ -108,6 +109,7 @@ const Login = () => {
                 type="password"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                 value={password}
+                id="password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -116,6 +118,7 @@ const Login = () => {
               type="submit"
               className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
               disabled={loading}
+              id="login"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>

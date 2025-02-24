@@ -1,4 +1,3 @@
-// backend\services\mlRecommendationService.js
 const tf = require('@tensorflow/tfjs');
 const Book = require('../models/Book');
 const BookActivity = require('../models/BookActivity');
