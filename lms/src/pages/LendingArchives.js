@@ -4,7 +4,7 @@ import { FaBook, FaBars, FaDownload,FaNewspaper, FaSearch, FaHistory, FaUser } f
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+// import 'jspdf-autotable';
 
 const LendingArchives = () => {
   const [activities, setActivities] = useState([]);

@@ -4,7 +4,7 @@ import { FaBook, FaBars, FaDownload, FaChartBar, FaExclamationTriangle, FaMoneyB
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+// import 'jspdf-autotable';
 
 const ReportsAnalytics = () => {
   const [isBooksDropdownOpen, setIsBooksDropdownOpen] = useState(false);

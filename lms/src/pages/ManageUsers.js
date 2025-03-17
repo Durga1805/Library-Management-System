@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaDownload, FaSearch, FaUser, FaBook,FaBars } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+// import 'jspdf-autotable';
 
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
