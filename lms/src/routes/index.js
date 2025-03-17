@@ -16,7 +16,7 @@ import FeedbackList from '../pages/FeedbackList';
 
 import SearchUser from '../pages/SearchUser';
 
-import ListUser from '../pages/ListUser';
+
 import LibStaffPage from '../pages/LibStaffPage';
 import AddBooks from '../pages/AddBooks';
 import SearchAndListBooks from '../pages/SearchAndListBooks';
@@ -99,10 +99,10 @@ const router = createBrowserRouter([
                 path: "searchuser",
                 element: <SearchUser />
             },
-            {
-                path: "listuser",
-                element: <ListUser />
-            },
+            // {
+            //     path: "listuser",
+            //     element: <ListUser />
+            // },
             
             {
                 path: "list-feedback",

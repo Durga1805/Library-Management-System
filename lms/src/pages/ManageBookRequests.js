@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBook, FaHistory, FaUser, FaBars, FaCheck, FaTimes, FaFilter, FaSearch ,FaSort} from 'react-icons/fa';
+import { FaBook, FaBars, FaCheck, FaTimes, FaFilter, FaSearch, FaSort } from 'react-icons/fa';
 import axiosInstance from '../utils/axiosConfig';
 import Header from '../components/Header';
 
@@ -13,7 +13,10 @@ const ManageBookRequests = () => {
   const [sortBy, setSortBy] = useState('requestDate');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isBooksDropdownOpen, setIsBooksDropdownOpen] = useState(false);
-  const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [emailSending, setEmailSending] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -31,12 +34,78 @@ const ManageBookRequests = () => {
     }
   };
 
+  const sendRejectionEmail = async (requestData, reason) => {
+    try {
+      setEmailSending(true);
+      // Send email first
+      await axiosInstance.post('/api/email/send', {
+        to: requestData.requestedBy.email,
+        subject: `Book Request Rejected: ${requestData.title}`,
+        text: `Dear ${requestData.requestedBy.name},\n\nYour request for the book "${requestData.title}" has been rejected.\n\nReason for rejection: ${reason}\n\nIf you have any questions, please contact the library staff.\n\nBest regards,\nLibrary Management System`,
+        html: `
+          <p>Dear ${requestData.requestedBy.name},</p>
+          <p>Your request for the book "<strong>${requestData.title}</strong>" has been rejected.</p>
+          <p><strong>Reason for rejection:</strong> ${reason}</p>
+          <p>If you have any questions, please contact the library staff.</p>
+          <p>Best regards,<br/>Library Management System</p>
+        `
+      });
+      return true;
+    } catch (error) {
+      console.error('Error sending rejection email:', error);
+      setMessage('Error sending rejection email. Please try again.');
+      return false;
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const handleRejection = async () => {
+    if (!rejectionReason.trim()) {
+      setMessage('Please provide a reason for rejection');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // First send the email
+      const emailSent = await sendRejectionEmail(selectedRequest, rejectionReason);
+      
+      if (emailSent) {
+        // Then update the request status
+        await axiosInstance.put(`/api/books/request/${selectedRequest._id}/status`, {
+          status: 'rejected',
+          adminResponse: rejectionReason
+        });
+
+        setMessage('Request rejected and notification email sent to user successfully.');
+        fetchRequests();
+      }
+    } catch (error) {
+      setMessage('Error processing rejection. Please try again.');
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setShowRejectionModal(false);
+      setRejectionReason('');
+      setSelectedRequest(null);
+    }
+  };
+
+  const openRejectionModal = (request) => {
+    setSelectedRequest(request);
+    setRejectionReason('');
+    setShowRejectionModal(true);
+  };
+
   const handleStatusUpdate = async (requestId, status, adminResponse) => {
     try {
       setLoading(true);
       await axiosInstance.put(`/api/books/request/${requestId}/status`, {
         status,
-        adminResponse
+        adminResponse,
+        notifyUser: true
       });
       setMessage(`Request ${status} successfully. Email notification sent to user.`);
       fetchRequests();
@@ -245,30 +314,18 @@ const ManageBookRequests = () => {
 
                       {request.status === 'pending' && (
                         <div className="mt-4">
-                          <textarea
-                            id={`response-${request._id}`}
-                            className="w-full px-3 py-2 border rounded"
-                            placeholder="Add your response here..."
-                            rows="2"
-                          />
                           <div className="mt-2 flex gap-2 justify-end">
                             <button
-                              onClick={() => handleStatusUpdate(
-                                request._id,
-                                'approved',
-                                document.getElementById(`response-${request._id}`).value
-                              )}
+                              onClick={() => handleStatusUpdate(request._id, 'approved', '')}
                               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center"
+                              disabled={loading || emailSending}
                             >
                               <FaCheck className="mr-2" /> Approve
                             </button>
                             <button
-                              onClick={() => handleStatusUpdate(
-                                request._id,
-                                'rejected',
-                                document.getElementById(`response-${request._id}`).value
-                              )}
+                              onClick={() => openRejectionModal(request)}
                               className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex items-center"
+                              disabled={loading || emailSending}
                             >
                               <FaTimes className="mr-2" /> Reject
                             </button>
@@ -293,6 +350,56 @@ const ManageBookRequests = () => {
           </div>
         </main>
       </div>
+
+      {/* Rejection Modal */}
+      {showRejectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Reject Book Request</h3>
+            <p className="text-gray-600 mb-2">Book: {selectedRequest?.title}</p>
+            <p className="text-gray-600 mb-4">Requested by: {selectedRequest?.requestedBy.name}</p>
+            
+            <textarea
+              className="w-full px-3 py-2 border rounded mb-4"
+              rows="4"
+              placeholder="Enter rejection reason..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+            
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowRejectionModal(false);
+                  setRejectionReason('');
+                  setSelectedRequest(null);
+                }}
+                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+                disabled={loading || emailSending}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejection}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex items-center"
+                disabled={loading || emailSending}
+              >
+                {emailSending ? (
+                  <>
+                    <span className="animate-spin mr-2">⌛</span>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <FaTimes className="mr-2" />
+                    Confirm Rejection
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

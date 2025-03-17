@@ -171,7 +171,7 @@ const UserPage = () => {
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <Link to="/book-request" className="flex flex-col items-center">
+                <Link to="/book-request" className="flex flex-col items-center" id="book-request-link">
                   <FaBook className="text-4xl text-blue-500 mb-4" />
                   <h3 className="text-xl font-semibold">Request Book</h3>
                   <p className="text-gray-600 text-center mt-2">

@@ -59,22 +59,22 @@ const StaffPage = () => {
     </Link>
 
     {/* Borrowed Books */}
-    <Link
+                      <Link
       to="/my-books-details"
       className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-    >
+                      >
       <FaHistory className="mr-2" />
       My Borrowed Books
-    </Link>
+                      </Link>
 
     {/* Lending Archives */}
-    <Link
+                      <Link
       to="/lending-archives"
       className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 flex items-center"
-    >
+                      >
       <FaHistory className="mr-2" />
       Lending Archives
-    </Link>
+                      </Link>
 
     {/* Book Suggestion */}
     <Link
@@ -84,7 +84,7 @@ const StaffPage = () => {
       <FaBook className="mr-2" />
       Book Suggestion
     </Link>
-  </nav>
+          </nav>
 </aside>
 
 
@@ -117,7 +117,7 @@ const StaffPage = () => {
               </div>
             </Link>
 
-            <Link
+              <Link 
               to="/my-books-details"
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
@@ -128,9 +128,9 @@ const StaffPage = () => {
                   <p className="text-gray-600">View your borrowed and reserved books</p>
                 </div>
               </div>
-            </Link>
+              </Link>
 
-            <Link
+              <Link 
               to="/staffprofile"
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
@@ -141,9 +141,9 @@ const StaffPage = () => {
                   <p className="text-gray-600">Update your profile information</p>
                 </div>
               </div>
-            </Link>
+              </Link>
 
-            <Link
+              <Link 
               to="/staffnewspaper"
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
@@ -154,9 +154,9 @@ const StaffPage = () => {
                   <p className="text-gray-600">Read and download newspapers</p>
                 </div>
               </div>
-            </Link>
+              </Link>
 
-            <Link
+              <Link 
               to="/staffSuggestion"
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
@@ -167,13 +167,13 @@ const StaffPage = () => {
                   <p className="text-gray-600">Which book is you want suggest or request it</p>
                 </div>
               </div>
-            </Link>
+              </Link>
           </div>
 
           <div className="mb-8">
             <DueReminders />
             <StaffRecommendations />
-          </div>
+        </div>
         </main>
       </div>
     </div>

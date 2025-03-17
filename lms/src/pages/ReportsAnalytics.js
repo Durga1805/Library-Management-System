@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { FaBook, FaBars, FaDownload, FaChartBar, FaExclamationTriangle, FaMoneyBillWave } from 'react-icons/fa';
 import Header from '../components/Header';
 import axiosInstance from '../utils/axiosConfig';
-import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const ReportsAnalytics = () => {
   const [isBooksDropdownOpen, setIsBooksDropdownOpen] = useState(false);
@@ -59,52 +60,152 @@ const ReportsAnalytics = () => {
   };
 
   const downloadReport = (type) => {
-    const workbook = XLSX.utils.book_new();
-    let data, filename;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    
+    // Add header
+    doc.setFontSize(20);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Library Management System', pageWidth/2, 15, { align: 'center' });
+    
+    doc.setFontSize(16);
+    doc.text(`${type === 'activity' ? 'User Activity Report' : 
+      type === 'overdue' ? 'Overdue Books Report' : 'Fine Payments Report'}`, 
+      pageWidth/2, 25, { align: 'center' });
+    
+    // Add generation date
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth/2, 32, { align: 'center' });
 
     if (type === 'activity') {
-      data = userReports.map(user => ({
-        'User ID': user.userid,
-        'Name': user.name,
-        'Department': user.dept,
-        'Total Books Borrowed': user.totalBorrowed,
-        'Current Loans': user.currentLoans,
-        'Overdue Books': user.overdueBooks.length,
-        'Total Fines': `₹${user.totalFines}`
-      }));
-      filename = 'user_activity_report';
+      // Prepare user activity data with overdue details
+      const data = userReports.map(user => {
+        const overdueDetails = user.overdueBooks.map(book => ({
+          title: book.title,
+          accessionNo: book.accession_no,
+          dueDate: new Date(book.dueDate).toLocaleDateString(),
+          fine: calculateFine(book.dueDate)
+        }));
+
+        return [
+          user.name,
+          user.dept,
+          user.totalBorrowed.toString(),
+          user.currentLoans.toString(),
+          overdueDetails.length.toString(),
+          `₹${overdueDetails.reduce((total, book) => total + book.fine, 0)}`
+        ];
+      });
+
+      doc.autoTable({
+        startY: 40,
+        head: [['Name', 'Department', 'Books Borrowed', 'Current Loans', 'Overdue', 'Total Fines']],
+        body: data,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [44, 62, 80],
+          textColor: [255, 255, 255],
+          fontSize: 10
+        },
+        bodyStyles: {
+          fontSize: 9
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        }
+      });
+
+      // Add overdue details in a separate table
+      let yPos = doc.autoTable.previous.finalY + 10;
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      doc.text('Overdue Books Details', pageWidth/2, yPos, { align: 'center' });
+
+      const overdueData = userReports.flatMap(user => 
+        user.overdueBooks.map(book => [
+          user.name,
+          book.title,
+          book.accession_no.toString(),
+          new Date(book.dueDate).toLocaleDateString(),
+          `₹${calculateFine(book.dueDate)}`
+        ])
+      );
+
+      if (overdueData.length > 0) {
+        doc.autoTable({
+          startY: yPos + 10,
+          head: [['User Name', 'Book Title', 'Accession No', 'Due Date', 'Fine Amount']],
+          body: overdueData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [44, 62, 80],
+            textColor: [255, 255, 255],
+            fontSize: 10
+          },
+          bodyStyles: {
+            fontSize: 9
+          },
+          alternateRowStyles: {
+            fillColor: [245, 247, 250]
+          }
+        });
+      }
     } else if (type === 'fines') {
-      data = finePayments.map(payment => ({
-        'Book': payment.bookId?.title || payment.bookTitle || 'N/A',
-        'User': payment.userId?.name || 'N/A',
-        'Amount': `₹${payment.amount}`,
-        'Payment Method': payment.paymentMethod,
-        'Date': new Date(payment.timestamp).toLocaleDateString(),
-        'Status': payment.status
-      }));
-      filename = 'fine_payments_report';
+      // Prepare fine payments data
+      const data = finePayments.map(payment => [
+        payment.userId?.name || 'N/A',
+        payment.bookId?.title || payment.bookTitle || 'N/A',
+        payment.bookId?.accession_no || 'N/A',
+        `₹${payment.amount}`,
+        new Date(payment.timestamp).toLocaleDateString(),
+        payment.status
+      ]);
+
+      doc.autoTable({
+        startY: 40,
+        head: [['User Name', 'Book Title', 'Accession No', 'Amount', 'Date', 'Status']],
+        body: data,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [44, 62, 80],
+          textColor: [255, 255, 255],
+          fontSize: 10
+        },
+        bodyStyles: {
+          fontSize: 9
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        }
+      });
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
-    XLSX.writeFile(workbook, `${filename}_${selectedDateRange}.xlsx`);
+    // Add footer with page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth/2,
+        doc.internal.pageSize.height - 10,
+        { align: 'center' }
+      );
+    }
+
+    // Save the PDF
+    doc.save(`library_${type}_report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  const generateFineReport = () => {
-    const workbook = XLSX.utils.book_new();
-    
-    const fineData = finePayments.map(payment => ({
-      'Book Title': payment.bookId?.title || payment.bookTitle || 'N/A',
-      'User Name': payment.userId?.name || 'N/A',
-      'Amount': `₹${payment.amount}`,
-      'Payment Method': payment.paymentMethod,
-      'Payment Date': new Date(payment.timestamp).toLocaleDateString(),
-      'Status': payment.status
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(fineData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fine Payments');
-    XLSX.writeFile(workbook, 'fine_payments_report.xlsx');
+  // Add this helper function for fine calculation
+  const calculateFine = (dueDate) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = Math.abs(today - due);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays * 3; // ₹3 per day
   };
 
   return (
@@ -251,13 +352,7 @@ const ReportsAnalytics = () => {
                     <div className="text-3xl font-bold text-red-600">
                       {statistics.overdueBooks}
                     </div>
-                    <button
-                      onClick={() => downloadReport('overdue')}
-                      className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      <FaDownload className="inline mr-2" />
-                      Download Report
-                    </button>
+                    
                   </div>
 
                   <div className="bg-white p-6 rounded-lg shadow-md">
@@ -281,10 +376,10 @@ const ReportsAnalytics = () => {
                     <h2 className="text-xl font-semibold">User Activity Report</h2>
                     <button
                       onClick={() => downloadReport('activity')}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
-                      <FaDownload className="inline mr-2" />
-                      Download Report
+                      <FaDownload className="mr-2" />
+                      Export Report
                     </button>
                   </div>
                   <div className="overflow-x-auto">
@@ -332,10 +427,11 @@ const ReportsAnalytics = () => {
                       Fine Payments
                     </h3>
                     <button
-                      onClick={generateFineReport}
+                      onClick={() => downloadReport('fines')}
                       className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                     >
-                      Export
+                      <FaDownload className="mr-2" />
+                      Export Report
                     </button>
                   </div>
                   

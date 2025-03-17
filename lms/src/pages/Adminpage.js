@@ -17,7 +17,7 @@ const AdminPage = () => {
           <Link to="/add-users" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Add Users</Link>
           <Link to="/searchuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Search Users</Link>
           <Link to="/listuser" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">List Users</Link>
-          <Link to="/list-feedback" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Feedback</Link>
+          {/* <Link to="/list-feedback" className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Feedback</Link> */}
           
         </nav>
       </aside>
@@ -57,13 +57,13 @@ const AdminPage = () => {
           </div>
 
           {/* Feedback */}
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          {/* <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <Link to="/list-feedback" className="flex flex-col items-center">
               <FaComments className="text-4xl text-purple-500 mb-4" />
               <h3 className="text-xl font-semibold">Feedback</h3>
               <p className="text-gray-600 text-center mt-2">View submitted feedback and reviews</p>
             </Link>
-          </div>
+          </div> */}
 
          
           
